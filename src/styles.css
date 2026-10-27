@@ -1,0 +1,180 @@
+@import "@fontsource/syne/latin-700.css";
+@import "@fontsource/syne/latin-800.css";
+@import "@fontsource/outfit/latin-400.css";
+@import "@fontsource/outfit/latin-500.css";
+@import "@fontsource/outfit/latin-600.css";
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Syne", "Avenir Next", sans-serif;
+  --font-sans: "Outfit", "Avenir Next", sans-serif;
+  --color-bg: #07060d;
+  --color-fg: #eceaf6;
+  --color-muted: #a39eb4;
+  --color-cyan: #7eebff;
+  --color-violet: #d4c4ff;
+  --color-amber: #ffc27a;
+  --color-ink: #071014;
+  --color-panel: #100e18;
+  --color-line: #ffffff24;
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  html,
+  body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    touch-action: none;
+    overscroll-behavior: none;
+  }
+}
+
+.game-shell {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.game-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 42%, transparent 42%, rgb(7 6 13 / 58%) 100%);
+}
+
+.panel {
+  border: 1px solid var(--color-line);
+  border-radius: 1.25rem;
+  background: rgb(16 14 24 / 82%);
+  padding: 1.25rem;
+  color: var(--color-fg);
+  backdrop-filter: blur(16px);
+}
+
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.enter-btn {
+  margin-top: 1.25rem;
+  height: 3rem;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--color-cyan);
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.enter-btn:disabled {
+  opacity: 0.55;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  background: rgb(16 14 24 / 82%);
+  color: var(--color-fg);
+  padding-inline: 0.75rem;
+  font-size: 0.75rem;
+}
+
+.kbd {
+  display: inline-flex;
+  min-width: 1.4rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-line);
+  border-radius: 0.35rem;
+  padding: 0.05rem 0.35rem;
+  font-size: 0.75rem;
+  color: var(--color-cyan);
+}
+
+.crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 25;
+  width: 0.4rem;
+  height: 0.4rem;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  border: 1px solid rgb(236 234 246 / 80%);
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px rgb(7 6 13 / 50%);
+}
+
+.look-zone {
+  touch-action: none;
+}
+
+.stick {
+  display: flex;
+  width: 8.5rem;
+  height: 8.5rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  background: rgb(16 14 24 / 45%);
+  touch-action: none;
+}
+
+.knob {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 999px;
+  background: var(--color-cyan);
+  box-shadow: 0 0 18px rgb(126 235 255 / 45%);
+}
+
+.touch-btn {
+  min-width: 6.5rem;
+  height: 3.25rem;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  background: rgb(16 14 24 / 82%);
+  color: var(--color-fg);
+  font-weight: 600;
+  touch-action: none;
+}
+
+.touch-btn-hot {
+  background: var(--color-cyan);
+  color: var(--color-ink);
+  border-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .knob {
+    transition: none;
+  }
+}

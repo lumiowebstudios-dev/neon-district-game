@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "NEON DISTRICT",
+      "hasCanvas": true,
+      "bodyTextLen": 246,
+      "bodyTextHash": "65371067834638a295000a314a63c68f959c2c94f17ba320d2c9b0b99d1fbf71",
+      "bodyTextPrefix": "The Promenade NIGHT PROMENADE Neon District A glass canyon after",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "NEON DISTRICT",
+      "hasCanvas": true,
+      "bodyTextLen": 246,
+      "bodyTextHash": "65371067834638a295000a314a63c68f959c2c94f17ba320d2c9b0b99d1fbf71",
+      "bodyTextPrefix": "The Promenade NIGHT PROMENADE Neon District A glass canyon after",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}
