@@ -42,6 +42,9 @@ public sealed class ResilientReader
     private readonly ReadPolicy _policy;
     private int _consecutiveBad;
     private long _skipUntil = -1;
+    // Sectors already known to be unreadable are never read again: retrying bad sectors stresses failing drives.
+    private readonly HashSet<long> _knownBad = new();
+    private readonly object _lock = new();
 
     public long TotalBadSectors { get; private set; }
     public bool HealthWarningRaised { get; private set; }
@@ -62,6 +65,19 @@ public sealed class ResilientReader
     /// </summary>
     public int Read(long offset, Span<byte> buffer, out bool hadErrors)
     {
+        lock (_lock) return ReadLocked(offset, buffer, out hadErrors);
+    }
+
+    private bool OverlapsKnownBad(long offset, int length)
+    {
+        if (_knownBad.Count == 0) return false;
+        int ss = _src.SectorSize;
+        for (long s = offset / ss; s * ss < offset + length; s++) if (_knownBad.Contains(s)) return true;
+        return false;
+    }
+
+    private int ReadLocked(long offset, Span<byte> buffer, out bool hadErrors)
+    {
         hadErrors = false;
         if (offset >= _src.Length) return 0;
         int want = (int)Math.Min(buffer.Length, _src.Length - offset);
@@ -69,7 +85,7 @@ public sealed class ResilientReader
 
         for (int attempt = 0; attempt <= _policy.ChunkRetries; attempt++)
         {
-            if (offset < _skipUntil) break; // inside a skip window: go straight to the sector path
+            if (offset < _skipUntil || OverlapsKnownBad(offset, want)) break; // go straight to the sector path
             try
             {
                 _src.ReadAt(offset, buf);
@@ -94,6 +110,13 @@ public sealed class ResilientReader
                 pos += skipN;
                 continue;
             }
+            if (_knownBad.Contains(abs / ss))
+            {
+                buf.Slice(pos, n).Clear();
+                hadErrors = true;
+                pos += n;
+                continue;
+            }
             try
             {
                 _src.ReadAt(abs, buf.Slice(pos, n));
@@ -103,6 +126,7 @@ public sealed class ResilientReader
             {
                 hadErrors = true;
                 buf.Slice(pos, n).Clear();
+                _knownBad.Add(abs / ss);
                 TotalBadSectors++;
                 _consecutiveBad++;
                 _sink?.Report(new DiskRegion(abs, n, RegionKind.Unreadable, "Media read error; zero-filled"));

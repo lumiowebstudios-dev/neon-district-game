@@ -31,6 +31,7 @@ public sealed class NtfsVolumeResult
     public long ExistingFiles { get; set; }
     public long DeletedDirectories { get; set; }
     public bool Completed { get; set; }
+    public string? VolumeName { get; set; }
 
     public bool IsClusterAllocated(long lcn)
     {
@@ -83,7 +84,10 @@ public sealed class NtfsScanner
         return v > 0 ? v * clusterSize : 1 << -v;
     }
 
-    public NtfsVolumeResult Run(IProgress<EngineProgress>? progress, CancellationToken ct)
+    private List<Extent>? _mftExtents;
+
+    /// <summary>Locates the MFT, loads the cluster bitmap and the volume label without walking records.</summary>
+    public NtfsVolumeResult Prepare()
     {
         _cs = _boot.ClusterSize;
         var bootRaw = _boot.Raw;
@@ -96,30 +100,43 @@ public sealed class NtfsScanner
             _sink.AddIssue(new ScanIssue(IssueSeverity.Error, EngineId.NtfsMft, $"Implausible MFT record size {_recordSize}", _vol));
             return result;
         }
-
         var mft = ReadRecordAt(_vol + mftLcn * _cs);
-        string mftSource = "$MFT";
         if (mft == null || !mft.UnnamedData().Any())
         {
             _sink.AddIssue(new ScanIssue(IssueSeverity.Warning, EngineId.NtfsMft, "$MFT record 0 unreadable or damaged; trying $MFTMirr.", _vol + mftLcn * _cs));
             mft = ReadRecordAt(_vol + mirrLcn * _cs);
-            mftSource = "$MFTMirr";
+            if (mft != null && mft.UnnamedData().Any())
+                _sink.AddIssue(new ScanIssue(IssueSeverity.Info, EngineId.NtfsMft, "MFT located via $MFTMirr.", _vol));
         }
         if (mft == null || !mft.UnnamedData().Any())
         {
             _sink.AddIssue(new ScanIssue(IssueSeverity.Error, EngineId.NtfsMft, "Could not locate the MFT (record 0 and mirror unusable). Use the orphan-record and carving engines.", _vol));
             return result;
         }
-
         var mftRuns = CollectRuns(mft, _vol + mftLcn * _cs, null);
         long mftSize = mft.UnnamedData().FirstOrDefault(a => a.StartVcn == 0)?.RealSize ?? 0;
-        var mftExtents = RunsToExtents(mftRuns, mftSize);
-        result.MftExtents.AddRange(mftExtents);
+        _mftExtents = RunsToExtents(mftRuns, mftSize);
+        result.MftExtents.AddRange(_mftExtents);
         result.RecordsTotal = mftSize / _recordSize;
-        if (mftSource != "$MFT")
-            _sink.AddIssue(new ScanIssue(IssueSeverity.Info, EngineId.NtfsMft, "MFT located via $MFTMirr.", _vol));
+        result.Bitmap = LoadBitmap(_mftExtents, result);
+        result.VolumeName = LoadVolumeName(_mftExtents);
+        return result;
+    }
 
-        result.Bitmap = LoadBitmap(mftExtents, result);
+    private string? LoadVolumeName(List<Extent> mftExtents)
+    {
+        long off = MapRecordOffset(mftExtents, 3);
+        var rec = off >= 0 ? ReadRecordAt(off) : null;
+        var a = rec?.Attributes.FirstOrDefault(x => x.Type == 0x60 && !x.NonResident);
+        if (rec == null || a == null || a.ValueLength == 0) return null;
+        return System.Text.Encoding.Unicode.GetString(rec.Raw, a.ValueOffsetInRecord, a.ValueLength);
+    }
+
+    public NtfsVolumeResult Run(IProgress<EngineProgress>? progress, CancellationToken ct)
+    {
+        var result = Prepare();
+        if (_mftExtents == null) return result;
+        var mftExtents = _mftExtents;
 
         // Walk every record.
         var prog = new EngineProgress { Phase = $"NTFS metadata ({_volLabel})", Unit = "MFT records", Total = result.RecordsTotal };
@@ -381,7 +398,7 @@ public sealed class NtfsScanner
         }
         parts.Reverse();
         string path = "\\" + string.Join("\\", parts);
-        if (orphan) path = "\\$OrphanFiles" + (parts.Count > 0 ? "\\…\\" + string.Join("\\", parts) : "");
+        if (orphan) path = "\\$OrphanFiles\\Folder #" + cur + (parts.Count > 0 ? "\\" + string.Join("\\", parts) : "");
         _ = deletedAncestor;
         return path;
     }

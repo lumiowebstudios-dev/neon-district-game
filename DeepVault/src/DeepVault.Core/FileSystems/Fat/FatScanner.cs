@@ -57,7 +57,10 @@ public sealed class FatScanner
         _opt = opt ?? new FatScanOptions();
     }
 
-    public FatVolumeResult Run(IProgress<EngineProgress>? progress, CancellationToken ct)
+    private long _rootOff, _rootDirBytes;
+
+    /// <summary>Computes the layout and loads the FAT (allocation information) without walking directories.</summary>
+    public FatVolumeResult Prepare()
     {
         var b = _boot.Raw;
         int bps = Bytes.U16(b, 0x0B);
@@ -99,7 +102,15 @@ public sealed class FatScanner
             _r.Fat = fat;
         }
         else _sink.AddIssue(new ScanIssue(IssueSeverity.Warning, EngineId.FatDirectory, "FAT too large to load; deleted-file overwrite analysis disabled.", fatOff));
+        _rootOff = rootOff;
+        _rootDirBytes = rootDirSectors * bps;
+        return _r;
+    }
 
+    public FatVolumeResult Run(IProgress<EngineProgress>? progress, CancellationToken ct)
+    {
+        Prepare();
+        var b = _boot.Raw;
         var prog = new EngineProgress { Phase = $"FAT directory analysis ({_label})", Unit = "directories" };
         if (_boot.Kind == FsKind.Fat32)
         {
@@ -108,7 +119,7 @@ public sealed class FatScanner
         }
         else
         {
-            WalkDirectory(new List<Extent> { new(rootOff, rootDirSectors * bps) }, "\\", false, prog, progress, ct, 0);
+            WalkDirectory(new List<Extent> { new(_rootOff, _rootDirBytes) }, "\\", false, prog, progress, ct, 0);
         }
         _sink.Commit();
         _r.Completed = true;
