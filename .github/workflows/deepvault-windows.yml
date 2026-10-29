@@ -36,6 +36,7 @@ jobs:
         run: ./tools/ci/windows-e2e.ps1 -Cli ../ci-out/DeepVault/deepvault-cli.exe -Samples tests/fixtures/samples -Work ../ci-out/e2e
 
       - name: GUI self-test (launches DeepVault.exe and drives every page)
+        if: success() || failure()
         shell: pwsh
         run: |
           $img = "${{ github.workspace }}\ci-out\selftest\disk.img"

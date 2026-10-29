@@ -239,6 +239,7 @@ public sealed class CabFormat : CarveFormat
     public override string DefaultExtension => "cab";
     public override IReadOnlyList<byte[]> Signatures { get; } = new[] { "MSCF\0\0\0\0"u8.ToArray() };
     public override long MaxSize => 2L << 30;
+    public override string Description => "Cabinet size from the CFHEADER. No checksums.";
 
     public override CarveResult? Analyze(ICarveSource src, long start, long maxLength)
     {

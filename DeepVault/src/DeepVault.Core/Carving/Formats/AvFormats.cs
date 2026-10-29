@@ -500,6 +500,7 @@ public sealed class AsfFormat : CarveFormat
     public override string DefaultExtension => "wmv";
     public override IReadOnlyList<byte[]> Signatures { get; } = new[] { new Guid("75B22630-668E-11CF-A6D9-00AA0062CE6C").ToByteArray() };
     public override long MaxSize => 16L << 30;
+    public override string Description => "File size taken from the File Properties object inside the header. No checksums.";
 
     public override CarveResult? Analyze(ICarveSource src, long start, long maxLength)
     {
@@ -524,6 +525,7 @@ public sealed class FlvFormat : CarveFormat
     public override string DefaultExtension => "flv";
     public override IReadOnlyList<byte[]> Signatures { get; } = new[] { "FLV\u0001"u8.ToArray() };
     public override long MaxSize => 8L << 30;
+    public override string Description => "Tag chain walk; every PreviousTagSize must match the tag before it.";
 
     public override CarveResult? Analyze(ICarveSource src, long start, long maxLength)
     {
@@ -592,6 +594,7 @@ public sealed class MpegPsFormat : CarveFormat
     public override string DefaultExtension => "mpg";
     public override IReadOnlyList<byte[]> Signatures { get; } = new[] { new byte[] { 0x00, 0x00, 0x01, 0xBA } };
     public override long MaxSize => 8L << 30;
+    public override string Description => "Pack/PES chain walk to the program end code.";
 
     public override CarveResult? Analyze(ICarveSource src, long start, long maxLength)
     {
@@ -638,6 +641,7 @@ public sealed class MidiFormat : CarveFormat
     public override string DefaultExtension => "mid";
     public override IReadOnlyList<byte[]> Signatures { get; } = new[] { "MThd\0\0\0\u0006"u8.ToArray() };
     public override long MaxSize => 64L << 20;
+    public override string Description => "Header + MTrk chunk lengths walked.";
 
     public override CarveResult? Analyze(ICarveSource src, long start, long maxLength)
     {
@@ -664,6 +668,7 @@ public sealed class AiffFormat : CarveFormat
     public override string DefaultExtension => "aiff";
     public override IReadOnlyList<byte[]> Signatures { get; } = new[] { "FORM"u8.ToArray() };
     public override long MaxSize => 4L << 30;
+    public override string Description => "FORM chunk size. No checksums.";
 
     public override CarveResult? Analyze(ICarveSource src, long start, long maxLength)
     {

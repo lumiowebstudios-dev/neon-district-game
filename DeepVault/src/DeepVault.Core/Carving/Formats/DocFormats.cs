@@ -495,6 +495,7 @@ public sealed class PstFormat : CarveFormat
     public override string DefaultExtension => "pst";
     public override IReadOnlyList<byte[]> Signatures { get; } = new[] { "!BDN"u8.ToArray() };
     public override long MaxSize => 64L << 30;
+    public override string Description => "End-of-file offset from the PST header (ANSI and Unicode). No checksums.";
 
     public override CarveResult? Analyze(ICarveSource src, long start, long maxLength)
     {

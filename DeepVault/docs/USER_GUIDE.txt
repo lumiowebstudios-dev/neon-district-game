@@ -1,0 +1,179 @@
+DEEPVAULT 1.0 - WINDOWS SETUP AND USAGE GUIDE
+=============================================
+
+Contents
+  1. Requirements
+  2. Installing (no installer needed)
+  3. Practise safely on a test image first
+  4. Recovering files from your old hard disk
+  5. Selecting the correct source drive
+  6. Understanding the results
+  7. Previewing files
+  8. Restoring to your 500 GB USB drive
+  9. Stopping, resuming and reopening scans
+ 10. Creating a disk image
+ 11. The command-line tool (optional)
+ 12. Where things are stored
+
+Read SAFETY.md before scanning your real drive.
+
+
+1. REQUIREMENTS
+---------------
+ * Windows 10 (version 1809 or later) or Windows 11, 64-bit (x64).
+ * Administrator rights to read a whole physical disk (not needed for disk images).
+ * Nothing else: the download is self-contained (it includes the .NET runtime).
+ * Free space for the scan project (results database): typically 10-500 MB.
+ * A separate destination drive with enough free space for the files you restore.
+
+
+2. INSTALLING
+-------------
+ 1. Unzip DeepVault-1.0.0-win-x64.zip onto your USB drive (or any drive OTHER than the one
+    you want to recover), e.g. E:\DeepVault.
+ 2. Double-click DeepVault.exe. Windows SmartScreen may warn about an unknown publisher
+    because this build is not code-signed: choose "More info" > "Run anyway" if you trust it.
+ 3. Nothing is written to the registry. To uninstall, delete the folder.
+    (Settings, if you change any, are saved in %APPDATA%\DeepVault\settings.json.)
+
+
+3. PRACTISE SAFELY ON A TEST IMAGE FIRST
+----------------------------------------
+The package contains small disposable disk images with deleted files
+(tests\fixtures\images\*.img.gz). They contain only generated test data.
+
+ 1. Extract one with 7-Zip, e.g. reformatted_ntfs.img.gz -> reformatted_ntfs.img
+    (this one simulates a Windows reinstall over old files).
+ 2. In DeepVault: "Select drive" > "Open a disk image instead..." > choose the .img file.
+ 3. Tick the confirmation box, "Continue to scan options", keep "Deep Scan", choose a project
+    folder, "Start scan". It finishes in seconds.
+ 4. Browse "Recovered files": the old photos and documents appear under
+    $PreviousFileSystem\Folder #nn with their original names. Preview them, tick some, and
+    restore them to a test folder. Open the recovery report.
+
+
+4. RECOVERING FILES FROM YOUR OLD HARD DISK
+-------------------------------------------
+ 1. Start DeepVault from the USB drive.
+ 2. Click "Restart as administrator" (bottom right) and accept the Windows prompt.
+    Windows only allows administrators to read raw disk sectors.
+ 3. "Select drive": pick the internal hard disk (see section 5), "Use selected drive".
+ 4. "Drive details": check identity and partitions, tick the confirmation. If Windows runs from
+    this disk, read the warning and tick the extra acknowledgement (Mode 1, see SAFETY.md).
+ 5. "Scan methods": keep "Deep Scan - All Applicable Methods" and the recommended scope
+    ("Free space and unpartitioned areas"). Put the project on the USB drive (suggested
+    automatically when a USB drive is connected). Click "Start scan".
+ 6. Wait. A Deep Scan reads the whole disk once; a 1 TB HDD typically needs 1.5-4 hours,
+    limited by the disk's read speed. You can stop at any time and resume later.
+ 7. When the scan finishes, open "Scan issues" to see whether any areas were unreadable,
+    then "Recovered files".
+
+A USB drive is NOT needed for scanning and browsing, only for restoring (but it is the best
+place for the project folder).
+
+
+5. SELECTING THE CORRECT SOURCE DRIVE
+-------------------------------------
+ * Each drive shows: number, model, capacity, connection (SATA, NVMe, USB...), serial number,
+   and its drive letters.
+ * Your internal HDD usually shows bus SATA or ATA and the badge "Windows runs from this drive"
+   if Windows is installed on it.
+ * Your 500 GB USB drive shows bus USB and the badge "External / USB". Do NOT select it as
+   the source.
+ * If unsure: Windows "Disk Management" (right-click Start) shows the same disk numbers.
+ * The project remembers model, serial and size; DeepVault refuses to restore from a different
+   disk later.
+
+
+6. UNDERSTANDING THE RESULTS
+----------------------------
+Tabs:
+  Recoverable      metadata and checks look good (medium or high confidence)
+  Partial/damaged  partly overwritten, inconsistent structure or unreadable sectors
+  Uncertain        low confidence (e.g. content could not be checked)
+  Not recoverable  content location unknown (metadata only)
+  All / Duplicates
+
+Columns: original folder (when known), size, dates, "Found by" (which engines), "Integrity":
+  Structure verified   internal structure consistent (incl. checksums for PNG, ZIP/Office,
+                       FLAC, Ogg, gzip, 7z, xz, RAR)
+  Structure plausible  consistent, but the format has no checksums
+  Header only          the end of the file had to be estimated
+  Damaged              inconsistent: overwritten, truncated or fragmented
+  Not checked          no validator for this type (e.g. plain text) or not yet checked;
+                       use "Check integrity of selected"
+
+Coloured dot = confidence (green high, blue medium, amber low).
+Carved files (found by content only) are named DV_<sector>.<ext> under \Carved\<type>.
+Files from a previous installation appear under \$PreviousFileSystem\Folder #<n>; files that
+shared a folder share a number.
+
+Search accepts * and ?. Filters: type, extension, method, integrity, sort order, existing files.
+"Thumbnails" switches to a gallery view. "Tick all matching" selects every result matching the
+current filters (across all pages).
+
+
+7. PREVIEWING FILES
+-------------------
+Double-click a result (or "Open preview"). Images (JPEG, PNG, GIF, BMP, TIFF, camera RAW via
+the embedded preview, HEIC/WebP if Windows has the codec), text files, RTF and the text of PDF
+files are shown; other types show their first bytes (all zeros usually means overwritten).
+Previews are read into memory only: nothing is written to disk, nothing is executed, archives
+are not opened. A preview of a damaged or fragmented candidate may be incomplete.
+
+
+8. RESTORING TO YOUR 500 GB USB DRIVE
+-------------------------------------
+ 1. Connect the USB drive. Tick the files you want and click "Restore selected...".
+ 2. Choose the USB drive in the list (the drive being recovered is marked and cannot be chosen).
+ 3. Keep "Create a new DeepVault Recovery <date> folder" and "Recreate the original folder
+    structure". For name clashes, keep "Keep both".
+ 4. The page shows the space needed versus free. If it is not enough, select fewer files or
+    choose another drive - DeepVault never deletes anything to make room.
+ 5. Click "Restore and verify". Each file is copied, read back and SHA-256-compared.
+ 6. The report page and the HTML/CSV report in the recovery folder list every file:
+    Verified, Restored with warnings (e.g. damaged/structure problems), Skipped, Failed,
+    Not attempted. "Verified" proves the copy matches the source as it is now; open important
+    files to confirm they are intact.
+ Files larger than 4 GB cannot be restored to a FAT32-formatted drive (DeepVault tells you).
+
+
+9. STOPPING, RESUMING AND REOPENING
+-----------------------------------
+ * "Stop (can be resumed)" during a scan, or closing the window, keeps everything up to the
+   last checkpoint (at most a few hundred MB of disk position are repeated).
+ * To resume: "Scan progress" > "Resume scan", or start a scan with the same project name, or
+   reopen the project in "Saved projects".
+ * "Saved projects" reopens earlier results without rescanning. To preview/restore, the scanned
+   drive (or image) must be connected again.
+ * A stopped or partially unreadable scan is always labelled NOT exhaustive.
+
+
+10. CREATING A DISK IMAGE
+-------------------------
+From an administrator command prompt in the DeepVault folder:
+    deepvault-cli disks
+    deepvault-cli image disk:1 --out F:\olddisk.img
+The destination must be another drive with enough free space for the WHOLE disk; otherwise
+DeepVault refuses rather than make an incomplete image. Then open the image in DeepVault
+("Open a disk image instead..."). Ctrl+C interrupts; running the same command again resumes.
+
+
+11. THE COMMAND-LINE TOOL
+-------------------------
+    deepvault-cli disks
+    deepvault-cli scan disk:1 --project E:\old.dvproj        (or an image file)
+    deepvault-cli list E:\old.dvproj --view recoverable --search *.jpg
+    deepvault-cli restore E:\old.dvproj --source disk:1 --dest E:\Recovered --view recoverable
+    deepvault-cli summary E:\old.dvproj
+    deepvault-cli scan-report E:\old.dvproj --out E:\report.html
+    deepvault-cli formats | engines
+
+
+12. WHERE THINGS ARE STORED
+---------------------------
+ * Project (<name>.dvproj, SQLite) + scan report + logs\: in the project folder you choose.
+ * Logs: kept in memory until a project folder exists, then written to <project folder>\logs.
+ * Settings: %APPDATA%\DeepVault\settings.json (only when you change settings).
+ * Restored files and recovery reports: only inside the recovery folder on the destination.
+ * Previews: memory only.

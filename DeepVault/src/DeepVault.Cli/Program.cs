@@ -43,7 +43,7 @@ Sources are opened read-only. Restores and images are never written to the sourc
                 "image" => Image(args),
                 "summary" => Summary(args),
                 "scan-report" => ScanReportCmd(args),
-                "formats" => Formats(),
+                "formats" => Formats(args.Contains("--markdown")),
                 "engines" => Engines(),
                 _ => Fail($"Unknown command '{args[0]}'.\n\n{Usage}"),
             };
@@ -221,8 +221,15 @@ Sources are opened read-only. Restores and images are never written to the sourc
         return 0;
     }
 
-    private static int Formats()
+    private static int Formats(bool markdown)
     {
+        if (markdown)
+        {
+            Console.WriteLine("| Format | Default ext. | Category | Checksums | On by default | How it is delimited and validated |\n|---|---|---|---|---|---|");
+            foreach (var f in SignatureRegistry.Create().Formats)
+                Console.WriteLine($"| {f.Name} | .{f.DefaultExtension} | {FileTypes.CategoryName(f.Category)} | {(f.HasChecksums ? "yes" : "no")} | {(f.EnabledByDefault ? "yes" : "no (opt-in)")} | {f.Description.Replace("|", "/")} |");
+            return 0;
+        }
         foreach (var f in SignatureRegistry.Create().Formats)
             Console.WriteLine($"{f.Id,-10} {f.Name,-48} .{f.DefaultExtension,-6} {(f.HasChecksums ? "checksums" : ""),-10} {(f.EnabledByDefault ? "" : "(opt-in)")}");
         return 0;

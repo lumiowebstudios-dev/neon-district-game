@@ -402,6 +402,7 @@ public sealed class RafFormat : CarveFormat
     public override string DefaultExtension => "raf";
     public override IReadOnlyList<byte[]> Signatures { get; } = new[] { "FUJIFILMCCD-RAW "u8.ToArray() };
     public override long MaxSize => 1L << 30;
+    public override string Description => "Size from the offsets/lengths of the embedded JPEG, CFA header and CFA data. No checksums.";
 
     public override CarveResult? Analyze(ICarveSource src, long start, long maxLength)
     {
@@ -426,6 +427,7 @@ public sealed class PsdFormat : CarveFormat
     public override string DefaultExtension => "psd";
     public override IReadOnlyList<byte[]> Signatures { get; } = new[] { new byte[] { 0x38, 0x42, 0x50, 0x53, 0x00 } };
     public override long MaxSize => 2L << 30;
+    public override string Description => "Section lengths walked (colour mode, resources, layers); raw/RLE image data size computed. No checksums.";
 
     public override CarveResult? Analyze(ICarveSource src, long start, long maxLength)
     {

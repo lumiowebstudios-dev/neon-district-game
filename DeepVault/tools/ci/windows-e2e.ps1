@@ -15,6 +15,9 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 New-Item -ItemType Directory -Force $Work | Out-Null
+$Work = (Resolve-Path $Work).Path
+$Samples = (Resolve-Path $Samples).Path
+$Cli = (Resolve-Path $Cli).Path
 $vhd = Join-Path $Work 'dv-e2e.vhd'
 $letter = 'V'
 $result = [ordered]@{ ok = $false; steps = @(); files = @() }

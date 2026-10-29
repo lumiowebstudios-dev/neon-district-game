@@ -129,6 +129,7 @@ public sealed unsafe class WindowsDiskEnumerator : IDiskEnumerator
         string? workLetter = WorkFolder != null ? Path.GetPathRoot(Path.GetFullPath(WorkFolder))?.TrimEnd('\\') : null;
         string? appLetter = Path.GetPathRoot(AppContext.BaseDirectory)?.TrimEnd('\\');
         var list = new List<PhysicalDiskInfo>();
+        var buf = stackalloc byte[4096];
         for (int n = 0; n < 64; n++)
         {
             string path = $@"\\.\PhysicalDrive{n}";
@@ -136,7 +137,7 @@ public sealed unsafe class WindowsDiskEnumerator : IDiskEnumerator
             if (h.IsInvalid) continue;
             var d = new PhysicalDiskInfo { Number = n, DevicePath = path, Id = $"PhysicalDrive{n}" };
             var q = new STORAGE_PROPERTY_QUERY { PropertyId = 0, QueryType = 0 };
-            var buf = stackalloc byte[4096];
+            new Span<byte>(buf, 4096).Clear();
             if (DeviceIoControl(h, IOCTL_STORAGE_QUERY_PROPERTY, &q, (uint)sizeof(STORAGE_PROPERTY_QUERY), buf, 4096, out uint ret, 0) && ret >= 36)
             {
                 // STORAGE_DEVICE_DESCRIPTOR
