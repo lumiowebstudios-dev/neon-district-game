@@ -63,6 +63,7 @@ public class PreviewTests
         Assert.StartsWith("Note 0:", txt.Text);
         var pdf = svc.Load(db.QueryFiles(new FileQuery { Search = "invoice_2019.pdf" }).Single());
         Assert.Equal(PreviewKind.Pdf, pdf.Kind);
+        Assert.Contains("invoice 2019", pdf.Text);
         var rtf = svc.Load(db.QueryFiles(new FileQuery { Search = "letter.rtf" }).Single());
         Assert.Contains("Dear friend", rtf.Text);
         var mp3 = svc.Load(db.QueryFiles(new FileQuery { Search = "song.mp3" }).Single());

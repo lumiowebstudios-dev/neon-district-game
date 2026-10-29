@@ -1,0 +1,404 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="clr-namespace:DeepVault.App.ViewModels"
+                    xmlns:scan="clr-namespace:DeepVault.Core.Scanning;assembly=DeepVault.Core">
+
+    <!-- 1. Welcome & safety -->
+    <DataTemplate DataType="{x:Type vm:WelcomeViewModel}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="32,26,32,32" MaxWidth="980" HorizontalAlignment="Left">
+                <TextBlock Text="Find and recover your old files — safely" Style="{StaticResource H1}"/>
+                <TextBlock Style="{StaticResource MutedText}" Margin="0,0,0,18" FontSize="14"
+                           Text="DeepVault reads your drive without changing it, shows you what can still be found, lets you preview files, and copies only the files you choose to a different drive — such as your USB drive."/>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="How it works" Style="{StaticResource H2}"/>
+                        <TextBlock Style="{StaticResource Body}" Text="1. Select the drive that held your files and confirm it is the right one."/>
+                        <TextBlock Style="{StaticResource Body}" Text="2. Run a Deep Scan. It combines several methods: deleted-file records (with names and folders), records left by a previous Windows installation, lost partitions, and a sector-by-sector search for known file types."/>
+                        <TextBlock Style="{StaticResource Body}" Text="3. Browse, search and preview what was found. You do not need the USB drive for this."/>
+                        <TextBlock Style="{StaticResource Body}" Text="4. Connect your USB drive, choose the files to keep and restore them. Each file is verified after copying, and a report is written."/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource WarningBanner}">
+                    <StackPanel>
+                        <TextBlock Text="Before you start — protect what is left" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                        <TextBlock Style="{StaticResource Body}" Text="• Every new file written to the affected drive can overwrite old files forever. Avoid installing programs, downloading or saving files on it until recovery is done."/>
+                        <TextBlock Style="{StaticResource Body}" Text="• If Windows is running from the drive you want to recover, Windows itself keeps writing to it in the background. DeepVault cannot prevent that. The safest option is to connect that drive to another computer (for example with a SATA-to-USB adapter) and scan it there, or to scan a disk image."/>
+                        <TextBlock Style="{StaticResource Body}" Text="• Never restore recovered files to the same drive. DeepVault blocks this by default."/>
+                        <TextBlock Style="{StaticResource Body}" Text="• If the drive clicks, makes unusual noises, disconnects or reads very slowly, stop and consider a professional recovery service. Repeated scanning can make a failing drive worse."/>
+                        <TextBlock Style="{StaticResource Body}" Text="• No software can bring back data that has been overwritten. DeepVault tells you honestly how intact each file appears."/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="What DeepVault never does" Style="{StaticResource H2}"/>
+                        <TextBlock Style="{StaticResource Body}" Text="It never formats, repairs, repartitions or writes to the drive being recovered, never deletes or overwrites files on your USB drive, never runs recovered programs, and never sends anything over the internet."/>
+                    </StackPanel>
+                </Border>
+                <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                    <Button Content="Start: select a drive" Style="{StaticResource Primary}" Command="{Binding Start}"/>
+                    <Button Content="Open a saved project" Command="{Binding OpenProjects}"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </DataTemplate>
+
+    <!-- 2. Drive selection -->
+    <DataTemplate DataType="{x:Type vm:SourceViewModel}">
+        <DockPanel Margin="32,26,32,20">
+            <StackPanel DockPanel.Dock="Top">
+                <TextBlock Text="Select the drive to recover from" Style="{StaticResource H1}"/>
+                <TextBlock Style="{StaticResource MutedText}" Margin="0,0,0,14" Text="Choose the drive that contained your old files. Check the model, size and serial number carefully — your USB destination drive is listed too, do not select it here."/>
+                <Border Style="{StaticResource WarningBanner}" Visibility="{Binding IsElevated, Converter={StaticResource NotVis}}">
+                    <TextBlock Style="{StaticResource Body}" Text="DeepVault is running without administrator rights. You can see the drives, but Windows only lets administrators read a whole disk. Use “Restart as administrator” at the bottom right before scanning a physical drive. Disk images can be opened without it."/>
+                </Border>
+                <Border Style="{StaticResource InfoBanner}" Visibility="{Binding Message, Converter={StaticResource Vis}}">
+                    <TextBlock Style="{StaticResource Body}" Text="{Binding Message}"/>
+                </Border>
+            </StackPanel>
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,12,0,0">
+                <Button Content="Use selected drive" Style="{StaticResource Primary}" Command="{Binding UseDisk}"/>
+                <Button Content="Open a disk image instead…" Command="{Binding OpenImage}"/>
+                <Button Content="Refresh list" Command="{Binding Refresh}"/>
+                <TextBlock Text="Looking for drives…" Foreground="{StaticResource Muted}" VerticalAlignment="Center" Visibility="{Binding Loading, Converter={StaticResource Vis}}"/>
+            </StackPanel>
+            <ListBox ItemsSource="{Binding Disks}" SelectedItem="{Binding SelectedDisk}" ItemContainerStyle="{StaticResource CardItem}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                    <Border Style="{StaticResource Badge}" Background="{StaticResource DangerBg}" Visibility="{Binding IsSystem, Converter={StaticResource Vis}}">
+                                        <TextBlock Text="Windows runs from this drive" FontSize="11.5"/>
+                                    </Border>
+                                    <Border Style="{StaticResource Badge}" Background="{StaticResource InfoBg}" Visibility="{Binding IsExternal, Converter={StaticResource Vis}}">
+                                        <TextBlock Text="External / USB" FontSize="11.5"/>
+                                    </Border>
+                                    <Border Style="{StaticResource Badge}" Visibility="{Binding HostsDeepVault, Converter={StaticResource Vis}}">
+                                        <TextBlock Text="DeepVault runs from here" FontSize="11.5"/>
+                                    </Border>
+                                    <Border Style="{StaticResource Badge}" Background="{StaticResource DangerBg}" Visibility="{Binding FailurePredicted, Converter={StaticResource Vis}}">
+                                        <TextBlock Text="SMART: failure predicted" FontSize="11.5"/>
+                                    </Border>
+                                </StackPanel>
+                                <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold"/>
+                            </DockPanel>
+                            <TextBlock Text="{Binding Identity}" Style="{StaticResource MutedText}" Margin="0,4,0,0"/>
+                            <TextBlock Text="{Binding Volumes}" Style="{StaticResource MutedText}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+    </DataTemplate>
+
+    <!-- 3. Drive & partition details -->
+    <DataTemplate DataType="{x:Type vm:DetailsViewModel}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="32,26,32,32">
+                <TextBlock Text="Confirm the drive" Style="{StaticResource H1}"/>
+                <TextBlock Style="{StaticResource MutedText}" Margin="0,0,0,14" Text="Make sure this is the drive with your old files. Nothing has been changed on it — DeepVault only read its partition table."/>
+                <Border Style="{StaticResource DangerBanner}" Visibility="{Binding FailurePredicted, Converter={StaticResource Vis}}">
+                    <TextBlock Style="{StaticResource Body}" Text="This drive reports that it expects to FAIL (SMART). Scanning puts load on it. The safest course is professional data recovery, or first creating a disk image on another large drive and scanning the image."/>
+                </Border>
+                <Border Style="{StaticResource WarningBanner}" Visibility="{Binding IsSystemDisk, Converter={StaticResource Vis}}">
+                    <StackPanel>
+                        <TextBlock Text="Live Windows scan (Mode 1): Windows is running from this drive" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                        <TextBlock Style="{StaticResource Body}" Text="DeepVault only reads it, but Windows, updates, antivirus and other programs keep writing to this drive while you work. Each write can overwrite old files. Keep the session short, close other programs, and do not save anything to this drive. For the best results use Mode 2: connect the drive to another PC (for example with a SATA-to-USB adapter) or scan a disk image — see the Safety guide."/>
+                        <CheckBox Content="I understand the background-write risk and want to scan the running system drive." IsChecked="{Binding AcceptLiveRisk}" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Identity" Style="{StaticResource H2}"/>
+                        <ItemsControl ItemsSource="{Binding Identity}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="170"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding Label}" Style="{StaticResource Label}"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Value}" Style="{StaticResource Value}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Partitions" Style="{StaticResource H2}"/>
+                            <Border Style="{StaticResource Badge}" Margin="10,0,0,8"><TextBlock Text="{Binding Scheme}" FontSize="11.5"/></Border>
+                        </StackPanel>
+                        <DataGrid ItemsSource="{Binding Partitions}" MaxHeight="260" HeadersVisibility="Column">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="#" Binding="{Binding Index}" Width="40"/>
+                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="170"/>
+                                <DataGridTextColumn Header="File system" Binding="{Binding FileSystem}" Width="100"/>
+                                <DataGridTextColumn Header="Start" Binding="{Binding Start}" Width="100"/>
+                                <DataGridTextColumn Header="Size" Binding="{Binding Size}" Width="100"/>
+                                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="*"/>
+                                <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="130"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <ItemsControl ItemsSource="{Binding TableIssues}" Margin="0,8,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate><TextBlock Text="{Binding StringFormat=• {0}}" Style="{StaticResource Body}" Foreground="{StaticResource Warning}"/></DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Style="{StaticResource MutedText}" Margin="0,8,0,0" Text="Partitions that were deleted or overwritten (for example by a Windows reinstall) are not listed here. The Deep Scan searches the whole disk for them and reports them separately as candidates."/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <CheckBox IsChecked="{Binding Confirmed}">
+                            <TextBlock Text="{Binding ConfirmText}" Style="{StaticResource Body}"/>
+                        </CheckBox>
+                    </StackPanel>
+                </Border>
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Continue to scan options" Style="{StaticResource Primary}" Command="{Binding Next}"/>
+                    <Button Content="Choose a different drive" Command="{Binding Back}"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </DataTemplate>
+
+    <!-- 4. Scan method selection -->
+    <DataTemplate DataType="{x:Type vm:MethodViewModel}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="32,26,32,32">
+                <TextBlock Text="Choose how to scan" Style="{StaticResource H1}"/>
+                <TextBlock Style="{StaticResource MutedText}" Margin="0,0,0,14" Text="The Deep Scan reads the whole drive once and combines every applicable method. On a large hard disk this can take several hours; you can stop and resume later."/>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <RadioButton GroupName="mode" IsChecked="{Binding Mode, Converter={StaticResource EnumBool}, ConverterParameter=Deep}">
+                            <StackPanel>
+                                <TextBlock Text="Deep Scan — All Applicable Methods (recommended)" FontWeight="SemiBold"/>
+                                <TextBlock Style="{StaticResource MutedText}" Text="Deleted-file records, records from a previous Windows installation, lost partitions and a sector-by-sector search for known file types."/>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton GroupName="mode" IsChecked="{Binding Mode, Converter={StaticResource EnumBool}, ConverterParameter=Quick}" Margin="0,10,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Quick scan — file-system records only" FontWeight="SemiBold"/>
+                                <TextBlock Style="{StaticResource MutedText}" Text="Minutes instead of hours. Finds recently deleted files with their names on the current file system only."/>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton GroupName="mode" IsChecked="{Binding Mode, Converter={StaticResource EnumBool}, ConverterParameter=Custom}" Margin="0,10,0,0">
+                            <TextBlock Text="Custom — choose individual methods" FontWeight="SemiBold"/>
+                        </RadioButton>
+                        <StackPanel Margin="28,6,0,0" IsEnabled="{Binding CustomEnabled}">
+                            <CheckBox Content="File-system metadata: deleted files with names, folders and dates (NTFS, FAT, exFAT)" IsChecked="{Binding UseMetadata}"/>
+                            <CheckBox Content="Previous file-system records (after a format or Windows reinstall)" IsChecked="{Binding UseOrphanRecords}"/>
+                            <CheckBox Content="Lost or deleted partitions" IsChecked="{Binding UseLostPartitions}"/>
+                            <CheckBox Content="Signature scan (carving): finds files by their content, without names" IsChecked="{Binding UseCarving}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Where to search" Style="{StaticResource H2}"/>
+                        <RadioButton GroupName="scope" IsChecked="{Binding Scope, Converter={StaticResource EnumBool}, ConverterParameter=UnallocatedAndUnpartitioned}"
+                                     Content="Free space and unpartitioned areas (recommended: where deleted and old files are)"/>
+                        <RadioButton GroupName="scope" IsChecked="{Binding Scope, Converter={StaticResource EnumBool}, ConverterParameter=EntireDisk}"
+                                     Content="Entire disk, including space used by current files (slower; finds many current files again)"/>
+                        <CheckBox Content="Also list files that still exist on the current file system" IsChecked="{Binding IncludeExisting}" Margin="0,10,0,0"/>
+                    </StackPanel>
+                </Border>
+                <Expander Header="File types for the signature scan" Foreground="{StaticResource Text}">
+                    <Border Style="{StaticResource Card}" Margin="0,8,0,0">
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                                <Button Content="Select all" Command="{Binding SelectAllFormats}"/>
+                                <Button Content="Select none" Command="{Binding SelectNoFormats}"/>
+                                <TextBlock Style="{StaticResource MutedText}" VerticalAlignment="Center" Text="Program files and unsigned plain text are off by default because system drives contain very many."/>
+                            </StackPanel>
+                            <ItemsControl ItemsSource="{Binding Formats}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <CheckBox Width="330" IsChecked="{Binding Enabled}" ToolTip="{Binding Description}" Margin="0,3,12,3">
+                                            <TextBlock><Run Text="{Binding Name, Mode=OneWay}"/><Run Text="  ." Foreground="{StaticResource Muted}"/><Run Text="{Binding Extension, Mode=OneWay}" Foreground="{StaticResource Muted}"/></TextBlock>
+                                        </CheckBox>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </DockPanel>
+                    </Border>
+                </Expander>
+                <Border Style="{StaticResource Card}" Margin="0,10,0,14">
+                    <StackPanel>
+                        <TextBlock Text="Scan project" Style="{StaticResource H2}"/>
+                        <TextBlock Style="{StaticResource MutedText}" Text="The project stores the list of found files, scan progress (for resuming) and logs. It never contains file contents. Put it on a different drive than the one you are recovering — your USB drive is a good choice."/>
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="Folder" Style="{StaticResource Label}" VerticalAlignment="Center"/>
+                            <TextBox Grid.Column="1" Text="{Binding ProjectFolder, UpdateSourceTrigger=PropertyChanged}"/>
+                            <Button Grid.Column="2" Content="Browse…" Command="{Binding BrowseFolder}" Margin="8,0,0,0"/>
+                            <TextBlock Grid.Row="1" Text="Name" Style="{StaticResource Label}" VerticalAlignment="Center" Margin="0,8,12,0"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}" Margin="0,8,0,0"/>
+                        </Grid>
+                        <TextBlock Style="{StaticResource Body}" Foreground="{StaticResource Accent}" Margin="0,8,0,0" Visibility="{Binding ResumeExisting, Converter={StaticResource Vis}}"
+                                   Text="A project with this name exists: the scan will resume where it stopped instead of starting over."/>
+                        <Border Style="{StaticResource WarningBanner}" Margin="0,10,0,0" Visibility="{Binding ProjectWarning, Converter={StaticResource Vis}}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource Body}" Text="{Binding ProjectWarning}"/>
+                                <CheckBox Content="No other drive is available — store the project on the drive being recovered anyway" IsChecked="{Binding AcceptProjectOnSource}" Margin="0,6,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <TextBlock Style="{StaticResource Body}" Foreground="{StaticResource Danger}" Text="{Binding Error}" Visibility="{Binding Error, Converter={StaticResource Vis}}" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Start scan" Style="{StaticResource Primary}" Command="{Binding Start}"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </DataTemplate>
+
+    <!-- 5. Active scan -->
+    <DataTemplate DataType="{x:Type vm:ProgressViewModel}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="32,26,32,32">
+                <TextBlock Text="Scan progress" Style="{StaticResource H1}"/>
+                <Border Style="{StaticResource WarningBanner}" Visibility="{Binding IsLiveSystemDisk, Converter={StaticResource Vis}}">
+                    <TextBlock Style="{StaticResource Body}" Text="Scanning the drive Windows is running from: avoid using this computer for anything else until the scan is finished."/>
+                </Border>
+                <Border Style="{StaticResource DangerBanner}" Visibility="{Binding HealthWarning, Converter={StaticResource Vis}}">
+                    <TextBlock Style="{StaticResource Body}" Text="The drive is returning many read errors and may be failing. If it clicks, makes noises or disconnects, stop now. Continuing can cause further damage; professional recovery may be needed."/>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="{Binding PhaseText}" Style="{StaticResource H2}"/>
+                        <TextBlock Text="{Binding DetailText}" Style="{StaticResource MutedText}" Margin="0,0,0,8"/>
+                        <ProgressBar Value="{Binding Percent, Mode=OneWay}" IsIndeterminate="{Binding Indeterminate}" Maximum="100"/>
+                        <DockPanel Margin="0,8,0,0">
+                            <TextBlock DockPanel.Dock="Right" Text="{Binding ElapsedText, StringFormat=Elapsed {0}}" Style="{StaticResource MutedText}"/>
+                            <TextBlock Text="{Binding AmountText}" Style="{StaticResource Body}"/>
+                        </DockPanel>
+                        <TextBlock Text="{Binding SpeedText}" Style="{StaticResource MutedText}"/>
+                        <UniformGrid Columns="4" Margin="0,16,0,0">
+                            <StackPanel>
+                                <TextBlock Text="{Binding FilesFound, StringFormat=N0}" Style="{StaticResource BigNumber}"/>
+                                <TextBlock Text="candidates found" Style="{StaticResource MutedText}"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="{Binding OrphanRecords, StringFormat=N0}" Style="{StaticResource BigNumber}"/>
+                                <TextBlock Text="old file records" Style="{StaticResource MutedText}"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="{Binding LostPartitions}" Style="{StaticResource BigNumber}"/>
+                                <TextBlock Text="lost volumes" Style="{StaticResource MutedText}"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="{Binding BadSectors, StringFormat=N0}" Style="{StaticResource BigNumber}"/>
+                                <TextBlock Text="unreadable sectors" Style="{StaticResource MutedText}"/>
+                            </StackPanel>
+                        </UniformGrid>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Methods" Style="{StaticResource H2}"/>
+                        <ItemsControl ItemsSource="{Binding Phases}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel Margin="0,3">
+                                        <TextBlock DockPanel.Dock="Right" Text="{Binding State}" Foreground="{StaticResource Muted}"/>
+                                        <TextBlock Text="{Binding Name}"/>
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+                <Border Visibility="{Binding ResultText, Converter={StaticResource Vis}}">
+                    <Border.Style>
+                        <Style TargetType="Border" BasedOn="{StaticResource SuccessBanner}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ResultIsWarning}" Value="True">
+                                    <Setter Property="Background" Value="{StaticResource WarningBg}"/>
+                                    <Setter Property="BorderBrush" Value="{StaticResource Warning}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <TextBlock Style="{StaticResource Body}" Text="{Binding ResultText}"/>
+                </Border>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                    <Button Content="Stop (can be resumed)" Style="{StaticResource DangerButton}" Command="{Binding Stop}" Visibility="{Binding IsRunning, Converter={StaticResource Vis}}"/>
+                    <Button Content="Resume scan" Command="{Binding Resume}" Visibility="{Binding NotRunning, Converter={StaticResource Vis}}"/>
+                    <Button Content="Browse results" Style="{StaticResource Primary}" Command="{Binding ViewResults}"/>
+                    <Button Content="Scan issues" Command="{Binding ViewIssues}"/>
+                </StackPanel>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Recently found" Style="{StaticResource H2}"/>
+                        <ItemsControl ItemsSource="{Binding RecentFinds}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel Margin="0,2">
+                                        <TextBlock DockPanel.Dock="Right" Text="{Binding Size, Converter={StaticResource Size}}" Foreground="{StaticResource Muted}" Margin="12,0,0,0"/>
+                                        <TextBlock Text="{Binding DisplayPath}" TextTrimming="CharacterEllipsis"/>
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </DataTemplate>
+
+    <!-- 6. Issues -->
+    <DataTemplate DataType="{x:Type vm:IssuesViewModel}">
+        <DockPanel Margin="32,26,32,20">
+            <StackPanel DockPanel.Dock="Top">
+                <TextBlock Text="Scan issues and unreadable regions" Style="{StaticResource H1}"/>
+                <Border Style="{StaticResource SuccessBanner}" Visibility="{Binding IsComplete, Converter={StaticResource Vis}}">
+                    <TextBlock Style="{StaticResource Body}" Text="{Binding Summary}"/>
+                </Border>
+                <Border Style="{StaticResource WarningBanner}" Visibility="{Binding IsComplete, Converter={StaticResource NotVis}}">
+                    <TextBlock Style="{StaticResource Body}" Text="{Binding Summary}"/>
+                </Border>
+                <TextBlock Text="Regions not read or not fully read" Style="{StaticResource H2}"/>
+                <DataGrid ItemsSource="{Binding Regions}" MaxHeight="200" Margin="0,0,0,14">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Kind" Binding="{Binding Severity}" Width="170"/>
+                        <DataGridTextColumn Header="Where" Binding="{Binding Where}" Width="320"/>
+                        <DataGridTextColumn Header="Note" Binding="{Binding Message}" Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Copy to clipboard" Command="{Binding CopyAll}" Margin="0,0,0,8"/>
+                    <TextBlock Text="Engine messages" Style="{StaticResource H2}"/>
+                </DockPanel>
+            </StackPanel>
+            <DataGrid ItemsSource="{Binding Issues}" RowHeight="NaN" MinRowHeight="26">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="80"/>
+                    <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" Width="90"/>
+                    <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock"><Setter Property="TextWrapping" Value="Wrap"/></Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Where" Binding="{Binding Where}" Width="160"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+    </DataTemplate>
+</ResourceDictionary>

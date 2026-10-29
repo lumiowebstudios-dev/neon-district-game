@@ -1,0 +1,232 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="clr-namespace:DeepVault.App.ViewModels">
+
+    <!-- 7. Unified recovered-files browser -->
+    <DataTemplate DataType="{x:Type vm:ResultsViewModel}">
+        <Grid Margin="24,20,24,14">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="340"/>
+            </Grid.ColumnDefinitions>
+
+            <DockPanel Grid.ColumnSpan="2">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding SelectionText}" VerticalAlignment="Center" Margin="0,0,12,0" FontWeight="SemiBold"/>
+                    <Button Content="Restore selected…" Style="{StaticResource Primary}" Command="{Binding RestoreSelected}" Margin="0"/>
+                </StackPanel>
+                <TextBlock Text="Recovered files" Style="{StaticResource H1}"/>
+            </DockPanel>
+
+            <StackPanel Grid.Row="1" Grid.ColumnSpan="2">
+                <Border Style="{StaticResource InfoBanner}" Visibility="{Binding Message, Converter={StaticResource Vis}}">
+                    <TextBlock Style="{StaticResource Body}" Text="{Binding Message}"/>
+                </Border>
+                <ListBox ItemsSource="{Binding ViewTabs}" SelectedItem="{Binding SelectedView}" Margin="0,4,0,8"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem" BasedOn="{StaticResource NavItem}">
+                            <Setter Property="Margin" Value="0,0,6,0"/>
+                            <Setter Property="Padding" Value="12,6"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate><TextBlock Text="{Binding Label}"/></DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </StackPanel>
+
+            <!-- Filters -->
+            <WrapPanel Grid.Row="2" Grid.ColumnSpan="2" Margin="0,0,0,10">
+                <TextBox Width="230" Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" ToolTip="Search file names and folders (* and ? allowed). Press Enter.">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Enter" Command="{Binding ApplySearch}"/>
+                    </TextBox.InputBindings>
+                </TextBox>
+                <Button Content="Search" Command="{Binding ApplySearch}" Margin="6,0,12,0"/>
+                <ComboBox Width="150" ItemsSource="{Binding Categories}" SelectedItem="{Binding Category}" DisplayMemberPath="Label" Margin="0,0,8,0"/>
+                <TextBox Width="70" Text="{Binding ExtensionFilter, UpdateSourceTrigger=PropertyChanged}" ToolTip="Extension, e.g. jpg (press Enter)" Margin="0,0,8,0">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Enter" Command="{Binding ApplySearch}"/>
+                    </TextBox.InputBindings>
+                </TextBox>
+                <ComboBox Width="200" ItemsSource="{Binding EngineChoices}" SelectedItem="{Binding Engine}" DisplayMemberPath="Label" Margin="0,0,8,0"/>
+                <ComboBox Width="150" ItemsSource="{Binding ConfidenceChoices}" SelectedItem="{Binding MinConfidence}" DisplayMemberPath="Label" Margin="0,0,8,0"/>
+                <TextBlock Text="Sort" Style="{StaticResource Label}" VerticalAlignment="Center" Margin="4,0,6,0"/>
+                <ComboBox Width="120" ItemsSource="{Binding SortChoices}" SelectedItem="{Binding Sort}" DisplayMemberPath="Label" Margin="0,0,8,0"/>
+                <CheckBox Content="Descending" IsChecked="{Binding Descending}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <CheckBox Content="Include existing files" IsChecked="{Binding IncludeExisting}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <CheckBox Content="Thumbnails" IsChecked="{Binding GalleryMode}" VerticalAlignment="Center"/>
+            </WrapPanel>
+
+            <!-- List view -->
+            <DataGrid x:Name="Grid" Grid.Row="3" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedRow}" SelectionMode="Single"
+                      Visibility="{Binding GalleryMode, Converter={StaticResource NotVis}}">
+                <DataGrid.InputBindings>
+                    <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding OpenPreview}" CommandParameter="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+                </DataGrid.InputBindings>
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Width="34">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding IsChecked, UpdateSourceTrigger=PropertyChanged}" Margin="0" HorizontalAlignment="Center"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Name" Width="200" SortMemberPath="Name">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="8" Height="8" Fill="{Binding Confidence, Converter={StaticResource ConfBrush}}" Margin="0,0,8,0" ToolTip="{Binding ConfidenceText}"/>
+                                    <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Original folder" Binding="{Binding Folder}" Width="*" MinWidth="140"/>
+                    <DataGridTextColumn Header="Size" Binding="{Binding SizeText}" Width="80"/>
+                    <DataGridTextColumn Header="Modified" Binding="{Binding Modified, Converter={StaticResource Time}}" Width="112"/>
+                    <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="100"/>
+                    <DataGridTextColumn Header="Found by" Binding="{Binding Method}" Width="120"/>
+                    <DataGridTextColumn Header="Integrity" Binding="{Binding Structure}" Width="125"/>
+                    <DataGridTextColumn Header="State" Binding="{Binding Deleted}" Width="64"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <!-- Thumbnail gallery -->
+            <ListBox Grid.Row="3" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedRow}" Visibility="{Binding GalleryMode, Converter={StaticResource Vis}}"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled" VirtualizingPanel.IsVirtualizing="True">
+                <ListBox.InputBindings>
+                    <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding OpenPreview}"/>
+                </ListBox.InputBindings>
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem" BasedOn="{StaticResource CardItem}">
+                        <Setter Property="Margin" Value="0,0,8,8"/>
+                        <Setter Property="Width" Value="176"/>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <Grid Height="120" Background="{StaticResource Surface2}">
+                                <Image Source="{Binding Thumbnail}" Stretch="Uniform"/>
+                                <TextBlock Text="{Binding Ext}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource Muted}" FontSize="16"
+                                           Visibility="{Binding Thumbnail, Converter={StaticResource NotVis}}"/>
+                                <CheckBox IsChecked="{Binding IsChecked, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="4"/>
+                            </Grid>
+                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                <Ellipse Width="8" Height="8" Fill="{Binding Confidence, Converter={StaticResource ConfBrush}}" Margin="0,0,6,0"/>
+                                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" Width="130" FontSize="12"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding SizeText}" Foreground="{StaticResource Muted}" FontSize="11.5"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <!-- Details panel -->
+            <Border Grid.Row="3" Grid.Column="1" Style="{StaticResource Card}" Margin="12,0,0,0" Padding="14">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="File details" Style="{StaticResource H2}"/>
+                        <TextBlock Text="Select a file to see its details." Style="{StaticResource MutedText}" Visibility="{Binding SelectedRow, Converter={StaticResource NotVis}}"/>
+                        <Image Source="{Binding DetailImage}" MaxHeight="220" Stretch="Uniform" Margin="0,0,0,10"/>
+                        <ItemsControl ItemsSource="{Binding Details}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,0,0,6">
+                                        <TextBlock Text="{Binding Label}" Style="{StaticResource Label}" Margin="0"/>
+                                        <TextBlock Text="{Binding Value}" Style="{StaticResource Value}" FontSize="12.5"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Content="Open preview" Command="{Binding OpenPreview}" HorizontalAlignment="Left" Margin="0,8,0,0"
+                                Visibility="{Binding SelectedRow, Converter={StaticResource Vis}}"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Footer: paging and selection -->
+            <WrapPanel Grid.Row="4" Grid.ColumnSpan="2" Margin="0,10,0,0">
+                <Button Content="Previous" Command="{Binding PrevPage}" Padding="10,5" Margin="0,0,4,6"/>
+                <TextBlock Text="{Binding PageText}" VerticalAlignment="Center" Margin="4,0,8,6"/>
+                <Button Content="Next" Command="{Binding NextPage}" Padding="10,5" Margin="0,0,16,6"/>
+                <Button Content="Tick this page" Command="{Binding CheckPage}" Margin="0,0,8,6"/>
+                <Button Content="Tick all matching" Command="{Binding SelectAllMatching}" Margin="0,0,8,6"/>
+                <Button Content="Clear selection" Command="{Binding ClearSelection}" Margin="0,0,16,6"/>
+                <Button Content="Check integrity of selected" Command="{Binding CheckIntegrity}" Margin="0,0,8,6"/>
+                <Button Content="Find exact duplicates" Command="{Binding FindDuplicates}" Margin="0,0,8,6"/>
+                <Button Content="Export list (CSV)…" Command="{Binding ExportCsv}" Margin="0,0,8,6"/>
+                <TextBlock Text="{Binding Busy}" Foreground="{StaticResource Accent}" VerticalAlignment="Center" Margin="0,0,0,6"/>
+            </WrapPanel>
+        </Grid>
+    </DataTemplate>
+
+    <!-- 8. File preview and details -->
+    <DataTemplate DataType="{x:Type vm:PreviewViewModel}">
+        <Grid Margin="24,20,24,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="360"/>
+            </Grid.ColumnDefinitions>
+            <DockPanel Grid.ColumnSpan="2">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <CheckBox Content="Selected for restore" IsChecked="{Binding IsChecked}" VerticalAlignment="Center" Margin="0,0,14,0"/>
+                    <Button Content="Previous" Command="{Binding Prev}"/>
+                    <Button Content="Next" Command="{Binding Next}"/>
+                    <Button Content="Back to list" Command="{Binding BackToResults}"/>
+                    <Button Content="Restore this file…" Style="{StaticResource Primary}" Command="{Binding RestoreThis}" Margin="0"/>
+                </StackPanel>
+                <TextBlock Text="{Binding Heading}" Style="{StaticResource H1}" TextTrimming="CharacterEllipsis"/>
+            </DockPanel>
+            <StackPanel Grid.Row="1" Grid.ColumnSpan="2">
+                <Border Style="{StaticResource InfoBanner}" Visibility="{Binding Message, Converter={StaticResource Vis}}">
+                    <TextBlock Style="{StaticResource Body}" Text="{Binding Message}"/>
+                </Border>
+                <TextBlock Style="{StaticResource MutedText}" Margin="0,0,0,8" Text="This is a preview read directly from the scanned drive into memory. Nothing is saved anywhere and no file content is executed. Previewing is not the same as restoring."/>
+            </StackPanel>
+            <Border Grid.Row="2" Background="{StaticResource Surface}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8">
+                <Grid>
+                    <TextBlock Text="Loading preview…" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource Muted}" Visibility="{Binding Loading, Converter={StaticResource Vis}}"/>
+                    <Image Source="{Binding Image}" Stretch="Uniform" StretchDirection="DownOnly" Margin="12" Visibility="{Binding Image, Converter={StaticResource Vis}}"/>
+                    <TextBox Text="{Binding TextContent, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" BorderThickness="0" Background="Transparent"
+                             FontFamily="{StaticResource MonoFont}" FontSize="13" Visibility="{Binding TextContent, Converter={StaticResource Vis}}"/>
+                    <TextBox Text="{Binding Hex, Mode=OneWay}" Style="{StaticResource Mono}" BorderThickness="0" Background="Transparent" Visibility="{Binding Hex, Converter={StaticResource Vis}}"/>
+                </Grid>
+            </Border>
+            <Border Grid.Row="2" Grid.Column="1" Style="{StaticResource Card}" Margin="12,0,0,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Details}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,0,0,8">
+                                    <TextBlock Text="{Binding Label}" Style="{StaticResource Label}" Margin="0"/>
+                                    <TextBlock Text="{Binding Value}" Style="{StaticResource Value}" FontSize="12.5"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </DataTemplate>
+</ResourceDictionary>

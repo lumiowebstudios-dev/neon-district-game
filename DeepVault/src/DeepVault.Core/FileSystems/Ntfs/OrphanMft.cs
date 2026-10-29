@@ -177,7 +177,7 @@ public sealed class OrphanMftEngine
                     return Get($"mft@{h.VolStart}", h.VolStart, h.ClusterSize, h.Label, null, h.Basis);
             foreach (var v in _volumes)
                 if (r.Phys >= v.Offset && r.Phys < v.Offset + v.Length)
-                    return Get($"vol@{v.Offset}", v.Offset, v.ClusterSize, v.Label, v.IsClusterAllocated, "geometry of the volume containing the records");
+                    return Get($"vol@{v.Offset}", v.Offset, v.ClusterSize, $"Previous file system on {v.Label}", v.IsClusterAllocated, "geometry of the volume containing the records");
             // No geometry: group by implied MFT start so paths can still be resolved.
             long key = r.RecordNumber >= 0 ? r.Phys - r.RecordNumber * r.RecordSize : r.Phys;
             return Get($"nogeo@{key}", -1, 0, "unknown volume", null, "volume geometry unknown");

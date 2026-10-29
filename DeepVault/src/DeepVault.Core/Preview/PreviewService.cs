@@ -79,6 +79,12 @@ public sealed class PreviewService
                 if (f.Size > MaxPdfBytes) { p.Kind = PreviewKind.Hex; p.Message = $"PDF larger than {Bytes.FormatSize(MaxPdfBytes)}: showing raw bytes only."; goto default; }
                 p.Bytes = ReadUpTo(cs, MaxPdfBytes, out bool t2);
                 p.Truncated = t2;
+                var pdf = PdfTextExtractor.Extract(p.Bytes);
+                p.Text = pdf.Text;
+                p.Message = pdf.Encrypted ? "This PDF is encrypted: its text cannot be previewed."
+                    : pdf.Text.Length == 0 ? $"No extractable text ({pdf.PageCount} page(s)). It may be scanned images, damaged, or use filters DeepVault does not decode. Restore it to view it."
+                    : pdf.LooksUnreadable ? "Text preview may be garbled: this PDF uses embedded font encodings."
+                    : $"Text preview of a {pdf.PageCount}-page PDF (layout and images are not shown).";
                 break;
             case PreviewKind.Text:
             {

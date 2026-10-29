@@ -271,7 +271,7 @@ public sealed class ScanOrchestrator
                 {
                     var s = new NtfsScanner(_src, _reader, _db, v.Part.Offset, bs, v.Unit, v.Label, new NtfsScanOptions { IncludeExistingFiles = includeExisting });
                     v.Ntfs = prepareOnly ? s.Prepare() : s.Run(prog, ct);
-                    if (v.Ntfs.VolumeName is { Length: > 0 } name) v.Label += $" \"{name}\"";
+                    if (v.Ntfs.VolumeName is { Length: > 0 } name) v.Label = v.Label.TrimEnd(')') + $", {name})";
                     if (!prepareOnly)
                         _db.AddIssue(new ScanIssue(IssueSeverity.Info, EngineId.NtfsMft, $"{v.Label}: {v.Ntfs.RecordsRead:N0} MFT records read, {v.Ntfs.DeletedFiles:N0} deleted files, {v.Ntfs.DeletedDirectories:N0} deleted folders.", v.Part.Offset));
                     break;

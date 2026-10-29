@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>DeepVault</AssemblyName>
+    <RootNamespace>DeepVault.App</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\deepvault.ico</ApplicationIcon>
+    <Product>DeepVault</Product>
+    <AssemblyTitle>DeepVault Data Recovery</AssemblyTitle>
+    <!-- No telemetry, no network: nothing in this app talks to the internet. -->
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DeepVault.Core\DeepVault.Core.csproj" />
+    <ProjectReference Include="..\DeepVault.Platform.Windows\DeepVault.Platform.Windows.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\deepvault.ico" />
+    <Resource Include="Assets\deepvault.png" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,12 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:svc="clr-namespace:DeepVault.App.Services">
+    <svc:BoolToVisibility x:Key="Vis"/>
+    <svc:BoolToVisibility x:Key="NotVis" Invert="True"/>
+    <svc:InverseBool x:Key="Not"/>
+    <svc:EnumToBool x:Key="EnumBool"/>
+    <svc:SizeText x:Key="Size"/>
+    <svc:LocalTime x:Key="Time"/>
+    <svc:ConfidenceBrush x:Key="ConfBrush"/>
+    <svc:StateText x:Key="StateText"/>
+</ResourceDictionary>

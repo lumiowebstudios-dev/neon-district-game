@@ -1,0 +1,151 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="clr-namespace:DeepVault.App.ViewModels">
+
+    <!-- 9. Restore selection and destination -->
+    <DataTemplate DataType="{x:Type vm:RestoreViewModel}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="32,26,32,32">
+                <TextBlock Text="Restore selected files" Style="{StaticResource H1}"/>
+                <TextBlock Style="{StaticResource MutedText}" Margin="0,0,0,14" Text="Connect your USB drive and choose it below. Files are copied into a new folder; nothing on the drive is deleted, formatted or overwritten. The drive you are recovering from cannot be chosen."/>
+                <Border Style="{StaticResource Card}">
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Change selection" Command="{Binding BackToResults}" Margin="0"/>
+                        <TextBlock Text="{Binding SelectionText}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </DockPanel>
+                </Border>
+                <DockPanel Margin="0,0,0,8">
+                    <Button DockPanel.Dock="Right" Content="Refresh drives" Command="{Binding Refresh}" Margin="0"/>
+                    <TextBlock Text="Destination drive" Style="{StaticResource H2}"/>
+                </DockPanel>
+                <ListBox ItemsSource="{Binding Destinations}" SelectedItem="{Binding SelectedDestination}" ItemContainerStyle="{StaticResource CardItem}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <DockPanel IsEnabled="{Binding Selectable}">
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                    <Border Style="{StaticResource Badge}" Background="{StaticResource InfoBg}" Visibility="{Binding IsExternal, Converter={StaticResource Vis}}">
+                                        <TextBlock Text="Removable / USB" FontSize="11.5"/>
+                                    </Border>
+                                    <Border Style="{StaticResource Badge}" Background="{StaticResource DangerBg}" Visibility="{Binding IsSource, Converter={StaticResource Vis}}">
+                                        <TextBlock Text="Drive being recovered — not allowed" FontSize="11.5"/>
+                                    </Border>
+                                </StackPanel>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="14"/>
+                                    <TextBlock Text="{Binding Detail}" Style="{StaticResource MutedText}"/>
+                                </StackPanel>
+                            </DockPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <Border Style="{StaticResource Card}" Margin="0,6,0,14">
+                    <StackPanel>
+                        <TextBlock Text="Folder and options" Style="{StaticResource H2}"/>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Browse…" Command="{Binding Browse}" Margin="8,0,0,0"/>
+                            <TextBox Text="{Binding Folder, UpdateSourceTrigger=PropertyChanged}"/>
+                        </DockPanel>
+                        <CheckBox Content="Create a new “DeepVault Recovery &lt;date&gt;” folder (recommended: nothing existing can be touched)" IsChecked="{Binding CreateSessionFolder}" Margin="0,10,0,0"/>
+                        <CheckBox Content="Recreate the original folder structure where it is known" IsChecked="{Binding PreserveFolders}"/>
+                        <TextBlock Text="If a file with the same name already exists:" Style="{StaticResource Label}" Margin="0,10,0,4"/>
+                        <RadioButton GroupName="coll" Content="Keep both — save the recovered file as “name (2).ext” (existing files are never replaced)"
+                                     IsChecked="{Binding Collision, Converter={StaticResource EnumBool}, ConverterParameter=RenameNew}"/>
+                        <RadioButton GroupName="coll" Content="Skip the recovered file" IsChecked="{Binding Collision, Converter={StaticResource EnumBool}, ConverterParameter=Skip}"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource SuccessBanner}" Visibility="{Binding SpaceOk, Converter={StaticResource Vis}}">
+                    <TextBlock Style="{StaticResource Body}" Text="{Binding SpaceText}"/>
+                </Border>
+                <ItemsControl ItemsSource="{Binding Blockers}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource DangerBanner}"><TextBlock Style="{StaticResource Body}" Text="{Binding}"/></Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <ItemsControl ItemsSource="{Binding Warnings}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource WarningBanner}"><TextBlock Style="{StaticResource Body}" Text="{Binding}"/></Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Expander Header="Files that cannot be restored" Visibility="{Binding NotRestorable.Count, Converter={StaticResource Vis}}">
+                    <ItemsControl ItemsSource="{Binding NotRestorable}" Margin="0,6,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate><TextBlock Text="{Binding}" Style="{StaticResource MutedText}"/></DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Expander>
+                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                    <Button Content="Restore and verify" Style="{StaticResource Primary}" Command="{Binding Start}"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </DataTemplate>
+
+    <!-- 10. Recovery progress -->
+    <DataTemplate DataType="{x:Type vm:RestoreProgressViewModel}">
+        <StackPanel Margin="32,26,32,32">
+            <TextBlock Text="Recovering files" Style="{StaticResource H1}"/>
+            <TextBlock Style="{StaticResource MutedText}" Margin="0,0,0,14" Text="Each file is written under a temporary name, read back and compared (SHA-256) with what was read from the source, then given its final name."/>
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <ProgressBar Value="{Binding Percent, Mode=OneWay}" Maximum="100"/>
+                    <TextBlock Text="{Binding ProgressText}" Style="{StaticResource Body}" Margin="0,10,0,0"/>
+                    <TextBlock Text="{Binding Current}" Style="{StaticResource MutedText}" TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+            </Border>
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Cancel" Style="{StaticResource DangerButton}" Command="{Binding Cancel}"/>
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- 11. Recovery report -->
+    <DataTemplate DataType="{x:Type vm:ReportViewModel}">
+        <DockPanel Margin="32,26,32,20">
+            <StackPanel DockPanel.Dock="Top">
+                <TextBlock Text="Recovery report" Style="{StaticResource H1}"/>
+                <TextBlock Text="{Binding Headline}" Style="{StaticResource Body}" FontSize="15" Margin="0,0,0,12"/>
+                <ItemsControl ItemsSource="{Binding Counts}" Margin="0,0,0,12">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><UniformGrid Rows="1"/></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource Card}" Margin="0,0,10,0" Padding="14">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Value}" Style="{StaticResource BigNumber}"/>
+                                    <TextBlock Text="{Binding Label}" Style="{StaticResource MutedText}"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Border Style="{StaticResource InfoBanner}">
+                    <TextBlock Style="{StaticResource Body}" Text="{Binding Disclaimer}"/>
+                </Border>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <Button Content="Open full report" Style="{StaticResource Primary}" Command="{Binding OpenReport}"/>
+                    <Button Content="Open recovered folder" Command="{Binding OpenFolder}"/>
+                    <Button Content="Back to results" Command="{Binding BackToResults}"/>
+                </StackPanel>
+                <TextBlock Text="{Binding SessionFolder, StringFormat=Saved in: {0}}" Style="{StaticResource MutedText}" Margin="0,0,0,8"/>
+            </StackPanel>
+            <DataGrid ItemsSource="{Binding Rows}" RowHeight="NaN" MinRowHeight="26">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Outcome" Binding="{Binding Outcome}" Width="150"/>
+                    <DataGridTextColumn Header="Original" Binding="{Binding Original}" Width="2*"/>
+                    <DataGridTextColumn Header="Restored as" Binding="{Binding Target}" Width="2*"/>
+                    <DataGridTextColumn Header="Size" Binding="{Binding Size}" Width="80"/>
+                    <DataGridTextColumn Header="Notes" Binding="{Binding Message}" Width="3*">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock"><Setter Property="TextWrapping" Value="Wrap"/></Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+    </DataTemplate>
+</ResourceDictionary>

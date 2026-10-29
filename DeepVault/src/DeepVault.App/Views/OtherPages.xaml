@@ -1,0 +1,152 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="clr-namespace:DeepVault.App.ViewModels">
+
+    <!-- 12. Saved scan projects -->
+    <DataTemplate DataType="{x:Type vm:ProjectsViewModel}">
+        <DockPanel Margin="32,26,32,20">
+            <StackPanel DockPanel.Dock="Top">
+                <TextBlock Text="Saved scan projects" Style="{StaticResource H1}"/>
+                <TextBlock Style="{StaticResource MutedText}" Margin="0,0,0,14" Text="Reopen earlier scans without rescanning. Interrupted scans can be resumed from where they stopped."/>
+                <Border Style="{StaticResource InfoBanner}" Visibility="{Binding Message, Converter={StaticResource Vis}}">
+                    <TextBlock Style="{StaticResource Body}" Text="{Binding Message}"/>
+                </Border>
+            </StackPanel>
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,12,0,0">
+                <Button Content="Open selected" Style="{StaticResource Primary}" Command="{Binding Open}"/>
+                <Button Content="Open a project file…" Command="{Binding Browse}"/>
+                <Button Content="Remove from list" Command="{Binding Forget}"/>
+            </StackPanel>
+            <ListBox ItemsSource="{Binding Projects}" SelectedItem="{Binding Selected}" ItemContainerStyle="{StaticResource CardItem}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Right" Text="{Binding Status}" Foreground="{StaticResource Muted}"/>
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14"/>
+                            </DockPanel>
+                            <TextBlock Style="{StaticResource MutedText}">
+                                <Run Text="{Binding Source, Mode=OneWay}"/><Run Text=" • "/><Run Text="{Binding Files, Mode=OneWay}"/><Run Text=" candidates • created "/><Run Text="{Binding Created, Mode=OneWay}"/>
+                            </TextBlock>
+                            <TextBlock Text="{Binding Path}" Style="{StaticResource MutedText}" FontSize="11.5"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+    </DataTemplate>
+
+    <!-- 13. Settings and supported formats -->
+    <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="32,26,32,32">
+                <TextBlock Text="Settings &amp; supported formats" Style="{StaticResource H1}"/>
+                <Border Style="{StaticResource Card}" Margin="0,8,0,14">
+                    <StackPanel>
+                        <TextBlock Text="Drive safety" Style="{StaticResource H2}"/>
+                        <CheckBox Content="Stop the scan automatically when the drive returns many read errors (recommended)" IsChecked="{Binding Settings.StopWhenDriveFailing}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                            <TextBlock Text="Unreadable sectors before stopping" Style="{StaticResource Label}" VerticalAlignment="Center"/>
+                            <TextBox Width="90" Text="{Binding Settings.BadSectorStopThreshold}"/>
+                        </StackPanel>
+                        <TextBlock Text="Previews" Style="{StaticResource H2}" Margin="0,14,0,8"/>
+                        <CheckBox Content="Show image thumbnails in the results gallery" IsChecked="{Binding Settings.ShowThumbnails}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                            <TextBlock Text="Validate file contents during the scan up to (MB)" Style="{StaticResource Label}" VerticalAlignment="Center"/>
+                            <TextBox Width="90" Text="{Binding Settings.ValidateUpToMb}"/>
+                        </StackPanel>
+                        <TextBlock Text="Custom file signatures" Style="{StaticResource H2}" Margin="0,14,0,8"/>
+                        <TextBlock Style="{StaticResource MutedText}" Text="Add your own header/footer signatures in a JSON file (see docs\SIGNATURES.md) to find formats DeepVault does not know yet."/>
+                        <DockPanel Margin="0,6,0,0">
+                            <Button DockPanel.Dock="Right" Content="Browse…" Command="{Binding BrowseSignatures}" Margin="8,0,0,0"/>
+                            <TextBox Text="{Binding Settings.CustomSignaturesPath}"/>
+                        </DockPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                            <Button Content="Save settings" Style="{StaticResource Primary}" Command="{Binding Save}"/>
+                            <TextBlock Text="{Binding Message}" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Privacy" Style="{StaticResource H2}"/>
+                        <TextBlock Style="{StaticResource Body}" Text="DeepVault has no telemetry, advertising or accounts and never connects to the internet. Logs contain operations, counts and disk offsets only — never file contents. Project files contain file names and locations found on your drive; keep them private."/>
+                    </StackPanel>
+                </Border>
+                <TextBlock Text="Recovery engines" Style="{StaticResource H2}"/>
+                <ItemsControl ItemsSource="{Binding Engines}" Margin="0,0,0,10">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource Card}" Padding="14">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14"/>
+                                    <TextBlock Text="{Binding Summary}" Style="{StaticResource Body}" Margin="0,4,0,0"/>
+                                    <TextBlock Style="{StaticResource Body}" Margin="0,4,0,0"><Run Text="Can: " FontWeight="SemiBold" Foreground="{StaticResource Success}"/><Run Text="{Binding Can, Mode=OneWay}"/></TextBlock>
+                                    <TextBlock Style="{StaticResource Body}" Margin="0,4,0,0"><Run Text="Cannot: " FontWeight="SemiBold" Foreground="{StaticResource Warning}"/><Run Text="{Binding Cannot, Mode=OneWay}"/></TextBlock>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="Supported file formats (signature scan)" Style="{StaticResource H2}"/>
+                <DataGrid ItemsSource="{Binding Formats}" RowHeight="NaN" MinRowHeight="26">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Format" Binding="{Binding Name}" Width="260"/>
+                        <DataGridTextColumn Header="Ext." Binding="{Binding Extension}" Width="60"/>
+                        <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="110"/>
+                        <DataGridCheckBoxColumn Header="Checksums" Binding="{Binding Checksums}" Width="85"/>
+                        <DataGridCheckBoxColumn Header="On by default" Binding="{Binding Enabled}" Width="100"/>
+                        <DataGridTextColumn Header="How the file is delimited and validated" Binding="{Binding Description}" Width="*">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock"><Setter Property="TextWrapping" Value="Wrap"/></Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </ScrollViewer>
+    </DataTemplate>
+
+    <!-- 14. Diagnostics -->
+    <DataTemplate DataType="{x:Type vm:DiagnosticsViewModel}">
+        <DockPanel Margin="32,26,32,20">
+            <StackPanel DockPanel.Dock="Top">
+                <TextBlock Text="Diagnostics &amp; troubleshooting" Style="{StaticResource H1}"/>
+                <Border Style="{StaticResource Card}" Margin="0,8,0,14">
+                    <ItemsControl ItemsSource="{Binding SystemInfo}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Label}" Style="{StaticResource Label}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Value}" Style="{StaticResource Value}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Border>
+                <DockPanel Margin="0,0,0,8">
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                        <Button Content="Copy diagnostics" Command="{Binding Copy}"/>
+                        <Button Content="Open log folder" Command="{Binding OpenLogFolder}" Margin="0"/>
+                    </StackPanel>
+                    <TextBlock Text="Log" Style="{StaticResource H2}"/>
+                </DockPanel>
+            </StackPanel>
+            <DataGrid ItemsSource="{Binding Lines}" RowHeight="NaN" MinRowHeight="24">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Time" Binding="{Binding Time, StringFormat=HH:mm:ss}" Width="80"/>
+                    <DataGridTextColumn Header="Level" Binding="{Binding Level}" Width="60"/>
+                    <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock"><Setter Property="TextWrapping" Value="Wrap"/></Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+    </DataTemplate>
+</ResourceDictionary>

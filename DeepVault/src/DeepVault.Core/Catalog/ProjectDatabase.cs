@@ -9,7 +9,7 @@ using Microsoft.Data.Sqlite;
 namespace DeepVault.Core.Catalog;
 
 public enum ResultView { All, Recoverable, Partial, Uncertain, Failed, Duplicates }
-public enum SortField { Name, Path, Size, Type, Modified, Created, Confidence, Offset }
+public enum SortField { Name, Path, Size, Type, Modified, Created, Confidence, Offset, Id }
 
 public sealed class FileQuery
 {
@@ -436,6 +436,7 @@ CREATE INDEX IF NOT EXISTS ix_restore_items ON restore_items(run_id);
             SortField.Path => "path",
             SortField.Confidence => "confidence",
             SortField.Offset => "first_offset",
+            SortField.Id => "id",
             _ => "name_lc",
         };
         Commit();
