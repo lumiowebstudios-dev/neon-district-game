@@ -125,7 +125,8 @@ def ole2(path, streams):
         right = i + 2 if i + 1 < len(streams) else NOS
         ents.append(dirent(name, 2, NOS, right, NOS, starts[i], len(content)))
     while len(ents) < 4:
-        ents.append(b"\0" * 64 + struct.pack("<HBBIII", 0, 0, 0, NOS, NOS, NOS) + b"\0" * 52)
+        ents.append(b"\0" * 64 + struct.pack("<HBBIII", 0, 0, 0, NOS, NOS, NOS) + b"\0" * 48)
+    assert all(len(e) == 128 for e in ents)
     hdr = bytes.fromhex("D0CF11E0A1B11AE1") + b"\0" * 16 + struct.pack("<HHHHH", 0x3E, 3, 0xFFFE, 9, 6) + b"\0" * 6
     hdr += struct.pack("<IIIIIIIII", 0, 1, 1, 0, 4096, ENDC, 0, ENDC, 0)
     hdr += struct.pack("<I", 0) + struct.pack("<I", FREE) * 108

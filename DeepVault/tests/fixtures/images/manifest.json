@@ -5,7 +5,7 @@
    "name": "ntfs_deleted",
    "file": "ntfs_deleted.img.gz",
    "size": 50331648,
-   "sha256": "b9f5621c988661317461c40865558e19d5c7c73397fed20e53f533e91ea301e3",
+   "sha256": "17df2d5336dacdbf1652ab502ed095e3ed86243462f86f0fa223206a596adaec",
    "scenario": "NTFS volume; files deleted through ntfs-3g (one fragmented, one LZNT1-compressed, one resident, one deleted directory)",
    "files": [
     {
@@ -48,7 +48,7 @@
      "name": "thesis.docx",
      "path": "\\Documents",
      "size": 1452,
-     "sha256": "efd5cebf91c61471af6b485f9f6d43743b273f5b9c226c67ce001d190e47f8e5",
+     "sha256": "859b88618cfe506d56a97bd6fe0cc7bac8f0ab3f7eaa999ac8985e34c19bcfbb",
      "deleted": true,
      "expect": "exact",
      "resident": false
@@ -56,8 +56,8 @@
     {
      "name": "old_report.doc",
      "path": "\\Documents",
-     "size": 15876,
-     "sha256": "4e69f7d645ed15d274ed2c8a9bc0e22f44a24b7382a3b93eda54638ac9bb6386",
+     "size": 15872,
+     "sha256": "073d50e838666f8d31e18700c2bdad42595b31fc4be3c7fabae7ea9bf4c6bf61",
      "deleted": true,
      "expect": "exact",
      "resident": false
@@ -138,7 +138,7 @@
      "name": "budget.xlsx",
      "path": "\\Keep",
      "size": 842,
-     "sha256": "9a4e9532dad69f2277024d84583e367fc7219b3996871b0560eaaad51a6ad366",
+     "sha256": "f440ad7bfbb484a724ef244a00d078b0912d8724fa096365a77cfa12cd136a7f",
      "deleted": false,
      "expect": "exact"
     }
@@ -150,7 +150,7 @@
    "name": "fat32_deleted",
    "file": "fat32_deleted.img.gz",
    "size": 67108864,
-   "sha256": "8bb300bf9f37faf5e8f9d7045707386e38fd28c8ac3729d97e372db5267505e5",
+   "sha256": "c18f66f9f19dcdd45bf3cfa338cbdd7a9b3be006cdc69a99f7c30cb97244b82b",
    "scenario": "FAT32 volume; files and a directory deleted with mtools (mdel/mdeltree)",
    "files": [
     {
@@ -188,8 +188,8 @@
     {
      "name": "old_budget.xls",
      "path": "\\Docs\\Old Projects",
-     "size": 7688,
-     "sha256": "cae07a573511d8476175e4b8506a68992ddd5225c4f1d923e7dedbb677156b50",
+     "size": 7680,
+     "sha256": "b78d27328f345b9f42e8c786d7d3a96337129061e6f4aad3525dd81f463dc4cf",
      "deleted": true,
      "expect": "exact"
     },
@@ -197,7 +197,7 @@
      "name": "backup.zip",
      "path": "\\Docs\\Old Projects",
      "size": 3236,
-     "sha256": "1930ef975a6a97ec6699d1014cd5c4476be62e532142de32ab01f60a887bd46b",
+     "sha256": "5a0a75a27043cb8f78b04fd79dd79c2bda1424f7b3f81df91d88b59452bd58b8",
      "deleted": true,
      "expect": "exact"
     },
@@ -213,7 +213,7 @@
      "name": "slides.pptx",
      "path": "\\Keep",
      "size": 811,
-     "sha256": "d86860a088fa3877b0ce11cc69b9f4b22729294c79203a63077dc0378b331d94",
+     "sha256": "6f59dccf151f5a5a2640ad4365eab4dafa51ca33a05d49368823dbf61240b2fb",
      "deleted": false,
      "expect": "exact"
     }
@@ -224,7 +224,7 @@
    "name": "exfat_deleted",
    "file": "exfat_deleted.img.gz",
    "size": 50331648,
-   "sha256": "1a34d1e7c82f2d15746e355aad1bdcf6a457967bff07621bd9dde018294c9196",
+   "sha256": "fcfaefcd71fb1756e77a791e972b904524dd235faada63ec9aeba02342ed44aa",
    "scenario": "exFAT volume; files deleted through exfat-fuse",
    "files": [
     {
@@ -274,7 +274,7 @@
    "name": "carve_raw",
    "file": "carve_raw.img.gz",
    "size": 25165824,
-   "sha256": "eedcc60529954c0bcd34aceefdd71f82811234d9f482206c228fb0eca1b40b60",
+   "sha256": "aec8f65989acdefa0d84dd8e97dd45db9e564923aab68582d2a799d56928f1aa",
    "scenario": "No file system: files at sector-aligned offsets separated by random/zero gaps, plus truncated/fragmented/corrupt files",
    "files": [
     {
@@ -344,7 +344,7 @@
      "name": "thesis.docx",
      "path": null,
      "size": 1452,
-     "sha256": "efd5cebf91c61471af6b485f9f6d43743b273f5b9c226c67ce001d190e47f8e5",
+     "sha256": "859b88618cfe506d56a97bd6fe0cc7bac8f0ab3f7eaa999ac8985e34c19bcfbb",
      "deleted": true,
      "expect": "exact",
      "offset": 359424
@@ -353,7 +353,7 @@
      "name": "budget.xlsx",
      "path": null,
      "size": 842,
-     "sha256": "9a4e9532dad69f2277024d84583e367fc7219b3996871b0560eaaad51a6ad366",
+     "sha256": "f440ad7bfbb484a724ef244a00d078b0912d8724fa096365a77cfa12cd136a7f",
      "deleted": true,
      "expect": "exact",
      "offset": 360960
@@ -362,7 +362,7 @@
      "name": "slides.pptx",
      "path": null,
      "size": 811,
-     "sha256": "d86860a088fa3877b0ce11cc69b9f4b22729294c79203a63077dc0378b331d94",
+     "sha256": "6f59dccf151f5a5a2640ad4365eab4dafa51ca33a05d49368823dbf61240b2fb",
      "deleted": true,
      "expect": "exact",
      "offset": 366080
@@ -370,8 +370,8 @@
     {
      "name": "old_report.doc",
      "path": null,
-     "size": 15876,
-     "sha256": "4e69f7d645ed15d274ed2c8a9bc0e22f44a24b7382a3b93eda54638ac9bb6386",
+     "size": 15872,
+     "sha256": "073d50e838666f8d31e18700c2bdad42595b31fc4be3c7fabae7ea9bf4c6bf61",
      "deleted": true,
      "expect": "exact",
      "offset": 387584
@@ -379,29 +379,29 @@
     {
      "name": "old_budget.xls",
      "path": null,
-     "size": 7688,
-     "sha256": "cae07a573511d8476175e4b8506a68992ddd5225c4f1d923e7dedbb677156b50",
+     "size": 7680,
+     "sha256": "b78d27328f345b9f42e8c786d7d3a96337129061e6f4aad3525dd81f463dc4cf",
      "deleted": true,
      "expect": "exact",
-     "offset": 424448
+     "offset": 423936
     },
     {
      "name": "backup.zip",
      "path": null,
      "size": 3236,
-     "sha256": "1930ef975a6a97ec6699d1014cd5c4476be62e532142de32ab01f60a887bd46b",
+     "sha256": "5a0a75a27043cb8f78b04fd79dd79c2bda1424f7b3f81df91d88b59452bd58b8",
      "deleted": true,
      "expect": "exact",
-     "offset": 436736
+     "offset": 452096
     },
     {
      "name": "archive.7z",
      "path": null,
      "size": 5292,
-     "sha256": "111d5bbe35b385c892cbea6108424f9e1581c9bcbe9f144ee9e3ac79f6fed0ce",
+     "sha256": "8a1dc1abe09e5238d7dc2fbba902bad09ffb875f266fdba7eadc95c089604d98",
      "deleted": true,
      "expect": "exact",
-     "offset": 460800
+     "offset": 459776
     },
     {
      "name": "logs.gz",
@@ -410,7 +410,7 @@
      "sha256": "75c7c2cdaca8d801139c7cc06ca226a4a77484e34e2004551b4572737720c4b3",
      "deleted": true,
      "expect": "exact",
-     "offset": 486912
+     "offset": 474624
     },
     {
      "name": "dump.xz",
@@ -419,7 +419,7 @@
      "sha256": "9defe35ad95ef473483a65701a48847196743ab20bef386eb40d55831d4171f9",
      "deleted": true,
      "expect": "exact",
-     "offset": 513024
+     "offset": 484352
     },
     {
      "name": "app_data.sqlite",
@@ -428,7 +428,7 @@
      "sha256": "7ebb5412f7815ac60e4a3ab556ceb70178171f04367e6e29bffc6922fcc4527a",
      "deleted": true,
      "expect": "exact",
-     "offset": 527872
+     "offset": 494080
     },
     {
      "name": "letter.rtf",
@@ -437,7 +437,7 @@
      "sha256": "050d526da600d6db92c0d1ad5901b241eccd7a5eaaa721e2109bd6586afea1de",
      "deleted": true,
      "expect": "exact",
-     "offset": 581120
+     "offset": 536064
     },
     {
      "name": "song.mp3",
@@ -446,7 +446,7 @@
      "sha256": "0471a4937dca2f573ec399e828facab5083bdb47b00cc61820bd32bde7f696ba",
      "deleted": true,
      "expect": "exact",
-     "offset": 593408
+     "offset": 539136
     },
     {
      "name": "memo.wav",
@@ -455,7 +455,7 @@
      "sha256": "177c46f7331707a814d6eda699bf38d12e13af966ddba95a6e95b43b4ce7f0eb",
      "deleted": true,
      "expect": "exact",
-     "offset": 614400
+     "offset": 565248
     },
     {
      "name": "lossless.flac",
@@ -464,16 +464,16 @@
      "sha256": "7424229127d202209f888d6267eb13704ef8bd2dcbd21df31fb79c0283871f10",
      "deleted": true,
      "expect": "exact",
-     "offset": 651264
+     "offset": 582144
     },
     {
      "name": "voice.ogg",
      "path": null,
      "size": 5219,
-     "sha256": "5c788df7c12eb76b1afdd0168e70b415244209065dc835aa3815ed3aa527562e",
+     "sha256": "069eb84e9f2eba4e04b2b050ab1430657355d6513520150631be53f56a96c79b",
      "deleted": true,
      "expect": "exact",
-     "offset": 672256
+     "offset": 603648
     },
     {
      "name": "clip.mp4",
@@ -482,7 +482,7 @@
      "sha256": "a9e062988845453018fd260a3fe9f8cbfbe6acece7ac3557933c9fd10a12f9b0",
      "deleted": true,
      "expect": "exact",
-     "offset": 687104
+     "offset": 629760
     },
     {
      "name": "camera.mov",
@@ -491,7 +491,7 @@
      "sha256": "3dafbac44354f25b61729a007c7b1cc318c1032d4ecba42e6d17f53f672a994c",
      "deleted": true,
      "expect": "exact",
-     "offset": 696832
+     "offset": 635392
     },
     {
      "name": "old_video.avi",
@@ -500,16 +500,16 @@
      "sha256": "71e31730390b0020a3ff71e73fe05db449a57794948222389feb7716c13a2915",
      "deleted": true,
      "expect": "exact",
-     "offset": 711680
+     "offset": 661504
     },
     {
      "name": "movie.mkv",
      "path": null,
      "size": 12363,
-     "sha256": "7e9e7879df7cb9b77a268c9086bdc36cfe28db4c33ee99ae013185ab597045db",
+     "sha256": "c042868a493a9b55afc15eb43092bd93473fed3583b9e50699c591c3a59046b0",
      "deleted": true,
      "expect": "exact",
-     "offset": 733696
+     "offset": 699904
     },
     {
      "name": "family_large.jpg",
@@ -518,7 +518,7 @@
      "sha256": "eeb73c62a21919cbd4b40be8ee1ac56b60fd4df216a98b5dcc2b4aff30049ffc",
      "deleted": true,
      "expect": "exact",
-     "offset": 747008
+     "offset": 733184
     },
     {
      "name": "settings.xml",
@@ -527,7 +527,7 @@
      "sha256": "93dfdc52a33abaef9d12b5f2d048e1d2dc9f1850bca5a60a1e39674167348581",
      "deleted": true,
      "expect": "exact",
-     "offset": 1133056
+     "offset": 1098752
     },
     {
      "name": "page.html",
@@ -536,31 +536,31 @@
      "sha256": "1b2f6b0fea55a906664775bd264f4dff695990bb5dbf1fed633367aa07311a19",
      "deleted": true,
      "expect": "exact",
-     "offset": 1138688
+     "offset": 1124352
     },
     {
      "name": "truncated.png",
-     "offset": 1146368,
+     "offset": 1137152,
      "expect": "damaged",
      "size": 67746,
      "sha256": "0ffba0b286e892a9ce5ee5c2677e5b9ca06d65e82466d83a0b6cc92c829ab2b1"
     },
     {
      "name": "fragmented.png",
-     "offset": 1204224,
+     "offset": 1198592,
      "expect": "damaged",
      "size": 689371,
      "sha256": "0855c01098a24b3831e8ed15471b9ef5b16dfe03689680d6cd49bf42b739f735"
     },
     {
      "name": "corrupt_header.jpg",
-     "offset": 1959424,
+     "offset": 1974272,
      "expect": "not_verified",
      "size": 29754
     },
     {
      "name": "truncated.zip",
-     "offset": 1993728,
+     "offset": 2004480,
      "expect": "damaged",
      "size": 3236
     }
@@ -570,14 +570,14 @@
    "name": "lost_partitions",
    "file": "lost_partitions.img.gz",
    "size": 100663296,
-   "sha256": "b1350a2d29a1f38706400d3df5564338058f731c796b0ae10116367c75ec03c0",
+   "sha256": "c01badbbb1f120f0995621861eb832a87b1aca3fd65840b58cd19e83811c048a",
    "scenario": "GPT disk whose MBR, primary GPT, backup GPT and NTFS primary boot sector were wiped",
    "files": [
     {
      "name": "thesis.docx",
      "path": "\\Work",
      "size": 1452,
-     "sha256": "efd5cebf91c61471af6b485f9f6d43743b273f5b9c226c67ce001d190e47f8e5",
+     "sha256": "859b88618cfe506d56a97bd6fe0cc7bac8f0ab3f7eaa999ac8985e34c19bcfbb",
      "deleted": false,
      "expect": "exact",
      "partition": 1
@@ -639,7 +639,7 @@
    "name": "reformatted_ntfs",
    "file": "reformatted_ntfs.img.gz",
    "size": 67108864,
-   "sha256": "ac496632eed227fc7bed057d625555fb6013a420a32e97b485e46d4265e55842",
+   "sha256": "cebcc1914afa41946f237fc48f7f0836d8c02aa0f38b684dad24a63ad04ed602",
    "scenario": "NTFS volume populated, then quick-formatted again and partially reused (simulates a Windows reinstall)",
    "files": [
     {
@@ -670,7 +670,7 @@
      "name": "thesis.docx",
      "path": "\\Users\\Owner\\Documents",
      "size": 1452,
-     "sha256": "efd5cebf91c61471af6b485f9f6d43743b273f5b9c226c67ce001d190e47f8e5",
+     "sha256": "859b88618cfe506d56a97bd6fe0cc7bac8f0ab3f7eaa999ac8985e34c19bcfbb",
      "deleted": true,
      "expect": "best_effort"
     },
@@ -685,8 +685,8 @@
     {
      "name": "old_report.doc",
      "path": "\\Users\\Owner\\Documents",
-     "size": 15876,
-     "sha256": "4e69f7d645ed15d274ed2c8a9bc0e22f44a24b7382a3b93eda54638ac9bb6386",
+     "size": 15872,
+     "sha256": "073d50e838666f8d31e18700c2bdad42595b31fc4be3c7fabae7ea9bf4c6bf61",
      "deleted": true,
      "expect": "best_effort"
     },
