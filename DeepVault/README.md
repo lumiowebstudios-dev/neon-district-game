@@ -41,7 +41,7 @@ checkpointed so it can be stopped and resumed.
 1. Read `docs/SAFETY.md` (5 minutes). **Most important:** stop using the affected drive.
 2. Unzip `DeepVault-1.0.0-win-x64` anywhere (preferably onto the USB drive, not the drive you
    are recovering) and run `DeepVault.exe`.
-3. Practise first on a disk image: `tests/fixtures/images/*.img.gz` (unzip with 7-Zip) →
+3. Practise first on a disk image: `test-images/*.img.gz` in the package (unzip with 7-Zip) →
    *Select drive → Open a disk image instead…*. See `docs/USER_GUIDE.txt`, section 3.
 4. For the real drive, click *Restart as administrator*, select the drive, confirm its model,
    size and serial number, run the Deep Scan, browse/preview, then restore to the USB drive.

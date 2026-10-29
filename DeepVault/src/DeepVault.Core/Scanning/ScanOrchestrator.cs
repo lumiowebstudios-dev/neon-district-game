@@ -157,6 +157,7 @@ public sealed class ScanOrchestrator
                     var geoms = volumes.Where(v => v.Ntfs != null).Select(v => new VolumeGeometry(v.Part.Offset, v.Part.Length, v.Ntfs!.ClusterSize, v.Label,
                         v.Ntfs.Bitmap != null ? v.Ntfs.IsClusterAllocated : null)).ToList();
                     var eng = new OrphanMftEngine(_src, _reader, _db, _db, geoms, _opt.ValidateUpTo);
+                    eng.AnalysedMftExtents.AddRange(volumes.Where(v => v.Unit >= 100 && v.Ntfs != null).SelectMany(v => v.Ntfs!.MftExtents));
                     eng.Run(EngineProgressAdapter(), ct);
                     foreach (var f in eng.Findings) { summary.Findings.Add(f); _db.AddIssue(new ScanIssue(IssueSeverity.Info, EngineId.OrphanMftRecords, f)); }
                     _db.Checkpoint(PhaseOrphans, "done", 0);

@@ -40,7 +40,7 @@ Read SAFETY.md before scanning your real drive.
 3. PRACTISE SAFELY ON A TEST IMAGE FIRST
 ----------------------------------------
 The package contains small disposable disk images with deleted files
-(tests\fixtures\images\*.img.gz). They contain only generated test data.
+(folder test-images\*.img.gz in the package; tests\fixtures\images in the source). They contain only generated test data.
 
  1. Extract one with 7-Zip, e.g. reformatted_ntfs.img.gz -> reformatted_ntfs.img
     (this one simulates a Windows reinstall over old files).

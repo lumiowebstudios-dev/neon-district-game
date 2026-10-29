@@ -146,6 +146,9 @@ public sealed class OrphanMftEngine
 
     public long FilesEmitted { get; private set; }
     public List<string> Findings { get; } = new();
+    /// <summary>MFT ranges already analysed by the NTFS engine (e.g. lost volumes found after the raw pass); records there are skipped.</summary>
+    public List<Extent> AnalysedMftExtents { get; } = new();
+    private bool Analysed(OrphanRecord r) => AnalysedMftExtents.Any(e => r.Phys >= e.Offset && r.Phys < e.Offset + e.Length);
 
     public OrphanMftEngine(IBlockSource disk, ResilientReader reader, IScanSink sink, IOrphanRecordStore store, IReadOnlyList<VolumeGeometry> volumes, long validateUpTo = 64L * 1024 * 1024)
     {
@@ -196,6 +199,7 @@ public sealed class OrphanMftEngine
             ct.ThrowIfCancellationRequested();
             prog.Done++;
             if (prog.Done % 4096 == 0) progress?.Report(prog);
+            if (Analysed(r)) continue;
             var g = GroupFor(r);
             if (r.BaseRecord != 0)
             {
@@ -215,7 +219,7 @@ public sealed class OrphanMftEngine
             ct.ThrowIfCancellationRequested();
             prog.Done++;
             if (prog.Done % 1024 == 0) { prog.FilesFound = FilesEmitted; progress?.Report(prog); }
-            if (r.IsDir || r.BaseRecord != 0 || r.Name == null) continue;
+            if (r.IsDir || r.BaseRecord != 0 || r.Name == null || Analysed(r)) continue;
             if (r.RecordNumber is >= 0 and < 24) continue;
             if (r.Name.StartsWith('$') && (r.ParentRecord == 5 || r.ParentRecord == 11)) continue;
             Emit(r, GroupFor(r));
@@ -230,7 +234,7 @@ public sealed class OrphanMftEngine
     private List<Hypothesis> InferFromMftRecords()
     {
         var res = new List<Hypothesis>();
-        foreach (var r in _store.All().Where(x => x.RecordNumber == 0 && x.Name == "$MFT" && !x.Resident && x.Runs.Count > 0))
+        foreach (var r in _store.All().Where(x => x.RecordNumber == 0 && x.Name == "$MFT" && !x.Resident && x.Runs.Count > 0 && !Analysed(x)))
         {
             long l0 = r.Runs[0][0];
             var mirror = _store.All().FirstOrDefault(x => x.RecordNumber == 1 && x.Name == "$MFTMirr" && Math.Abs(x.Phys - r.Phys) <= 4 * r.RecordSize && x.Runs.Count > 0);

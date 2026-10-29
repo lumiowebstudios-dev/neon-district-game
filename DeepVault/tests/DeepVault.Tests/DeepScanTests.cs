@@ -153,6 +153,9 @@ public class DeepScanTests
             Assert.Equal(rep.TrackedFiles, rep.VerifiedByHash);
             // Files of lost volumes keep their names and folders.
             Assert.Contains(db.QueryFiles(new FileQuery { Search = "thesis.docx" }), f => f.Path == "\\Work");
+            // The lost volume's own MFT must not also be reported as a "previous file system".
+            Assert.Single(db.QueryFiles(new FileQuery { Search = "thesis.docx" }));
+            Assert.Equal(fx.Files.Count, db.CountView(ResultView.All));
         }
         Assert.Equal(before, Fixtures.Sha256File(fx.ImagePath));
     }
