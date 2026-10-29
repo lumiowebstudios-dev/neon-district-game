@@ -17,6 +17,52 @@ public sealed class CachedCarveSource : ICarveSource
     public CachedCarveSource(CachedReader r) => _r = r;
     public long Length => _r.Length;
     public int Read(long offset, Span<byte> buffer) => offset >= Length ? 0 : _r.Read(offset, buffer);
+
+    // Remembers, per search pattern, a window of disk already searched and the matches in it. Carving
+    // starts at ever-increasing offsets, so analyzers looking for the same footer from successive
+    // candidates (e.g. every entry of a damaged ZIP) would otherwise re-read the same data each time.
+    private sealed class FindWindow
+    {
+        public long Lo, Hi;
+        public readonly List<long> Hits = new();
+    }
+
+    private readonly Dictionary<string, FindWindow> _windows = new();
+    private const int MaxRememberedHits = 100_000;
+
+    internal long FindRemembered(ReadOnlySpan<byte> pattern, long from, long limit, int chunk)
+    {
+        string key = Convert.ToHexString(pattern);
+        if (!_windows.TryGetValue(key, out var w) || from < w.Lo || from > w.Hi || w.Hits.Count > MaxRememberedHits)
+            _windows[key] = w = new FindWindow { Lo = from, Hi = from };
+        int i = w.Hits.BinarySearch(from);
+        if (i < 0) i = ~i;
+        if (i > 4096) { w.Hits.RemoveRange(0, i); w.Lo = from; i = 0; }
+        if (i < w.Hits.Count) return w.Hits[i] < limit ? w.Hits[i] : -1;
+        if (limit <= w.Hi) return -1;
+        var buf = new byte[chunk + pattern.Length - 1];
+        while (w.Hi < limit)
+        {
+            long pos = w.Hi;
+            int want = (int)Math.Min(buf.Length, limit - pos + pattern.Length - 1);
+            int n = Read(pos, buf.AsSpan(0, want));
+            int searchable = n - pattern.Length + 1;
+            if (searchable <= 0) return -1;
+            long first = -1;
+            for (int o = 0; o < searchable;)
+            {
+                int idx = buf.AsSpan(o, n - o).IndexOf(pattern);
+                if (idx < 0 || o + idx >= searchable) break;
+                w.Hits.Add(pos + o + idx);
+                if (first < 0) first = pos + o + idx;
+                o += idx + 1;
+            }
+            w.Hi = pos + searchable;
+            if (first >= 0) return first < limit ? first : -1;
+            if (n < want) return -1;
+        }
+        return -1;
+    }
 }
 
 public sealed class StreamCarveSource : ICarveSource
@@ -133,6 +179,7 @@ public static class CarveIO
     /// <summary>Finds the next occurrence of pattern in [from, limit). Returns -1 if not found.</summary>
     public static long Find(this ICarveSource s, ReadOnlySpan<byte> pattern, long from, long limit, int chunk = 256 * 1024)
     {
+        if (s is CachedCarveSource c && pattern.Length >= 4 && from < limit) return c.FindRemembered(pattern, from, limit, chunk);
         var buf = new byte[chunk + pattern.Length];
         long pos = from;
         while (pos < limit)

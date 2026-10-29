@@ -470,6 +470,7 @@ public sealed class ProgressViewModel : PageViewModel
         HealthWarning = false;
         Raise(nameof(IsLiveSystemDisk));
         _cts = new CancellationTokenSource();
+        _etaPhase = -1;
         _timer.Start();
         var db = S.Project; var src = S.Source;
         var progress = new SyncProgress<ScanProgress>(p => _latest = p);
@@ -491,7 +492,7 @@ public sealed class ProgressViewModel : PageViewModel
             ResultIsWarning = sum.Outcome != ScanOutcome.Completed;
             ResultText = sum.Outcome switch
             {
-                ScanOutcome.Completed => $"Scan complete for the selected methods and scope. {sum.FilesFound:N0} candidates found in {sum.Duration:hh\\:mm\\:ss}.",
+                ScanOutcome.Completed => $"Scan complete for the selected methods and scope. {sum.FilesFound:N0} candidates found in {Bytes.FormatDuration(sum.Duration)}.",
                 ScanOutcome.CompletedWithGaps => $"Scan finished, but {sum.BadSectors:N0} sectors could not be read: it is NOT complete for those areas (see Scan issues). {sum.FilesFound:N0} candidates found.",
                 ScanOutcome.Cancelled => $"Scan stopped by you. It is NOT complete. {sum.FilesFound:N0} candidates found so far; you can resume later.",
                 ScanOutcome.StoppedDriveHealth => "Scan stopped automatically: the drive returned many read errors and may be failing. Continuing can damage it further. Consider professional data recovery, or image the drive with a dedicated tool before scanning again.",
@@ -507,6 +508,10 @@ public sealed class ProgressViewModel : PageViewModel
     }
 
     private int _tick;
+    private bool _recentBusy;
+    private int _etaPhase = -1;
+    private long _etaDone0;
+    private TimeSpan _etaTime0;
 
     private void Refresh()
     {
@@ -521,19 +526,33 @@ public sealed class ProgressViewModel : PageViewModel
         AmountText = p.Total > 0
             ? (p.Unit == "bytes" ? $"{Bytes.FormatSize(p.Done)} of {Bytes.FormatSize(p.Total)} ({Percent:0.0}%)" : $"{p.Done:N0} of {p.Total:N0} {p.Unit} ({Percent:0.0}%)")
             : (p.Done > 0 ? $"{p.Done:N0} {p.Unit} processed — total not known in advance" : "Working…");
+        // The time left uses the average rate since this phase started (or resumed): the momentary
+        // rate swings widely as the scan moves between empty space and dense areas.
+        if (p.PhaseIndex != _etaPhase || p.Done < _etaDone0) { _etaPhase = p.PhaseIndex; _etaDone0 = p.Done; _etaTime0 = p.Elapsed; }
+        double avg = (p.Elapsed - _etaTime0).TotalSeconds >= 30 ? (p.Done - _etaDone0) / (p.Elapsed - _etaTime0).TotalSeconds : 0;
         SpeedText = p.Unit == "bytes" && p.BytesPerSecond > 0
-            ? $"{Bytes.FormatSize((long)p.BytesPerSecond)}/s" + (p.Total > 0 ? $" • about {TimeSpan.FromSeconds((p.Total - p.Done) / Math.Max(1, p.BytesPerSecond)):hh\\:mm\\:ss} left in this phase (estimate)" : "")
+            ? $"{Bytes.FormatSize((long)p.BytesPerSecond)}/s" + (p.Total > 0 && avg > 0 ? $" • about {Bytes.FormatDuration(TimeSpan.FromSeconds((p.Total - p.Done) / avg))} left in this phase (estimate)" : "")
             : "";
-        ElapsedText = $"{p.Elapsed:hh\\:mm\\:ss}";
+        ElapsedText = $"{Bytes.FormatDuration(p.Elapsed)}";
         FilesFound = p.FilesFound;
         BadSectors = p.BadSectors;
         LostPartitions = p.LostPartitionsFound;
         OrphanRecords = p.OrphanRecordsFound;
         HealthWarning = p.DriveHealthWarning;
-        if (++_tick % 5 == 0 && S.Project != null)
+        if (++_tick % 5 == 0 && S.Project is { } db && !_recentBusy)
         {
-            RecentFinds.Clear();
-            foreach (var f in S.Project.QueryFiles(new FileQuery { Sort = SortField.Id, Descending = true, Limit = 10 })) RecentFinds.Add(f);
+            // Off the UI thread: the query waits while the scan saves a batch to the project, which on a
+            // slow USB stick made the window show "Not responding" although the scan was running.
+            _recentBusy = true;
+            Task.Run(() => db.QueryFiles(new FileQuery { Sort = SortField.Id, Descending = true, Limit = 10 })).ContinueWith(t =>
+            {
+                _recentBusy = false;
+                if (t.IsCompletedSuccessfully && IsRunning)
+                {
+                    RecentFinds.Clear();
+                    foreach (var f in t.Result) RecentFinds.Add(f);
+                }
+            }, TaskScheduler.FromCurrentSynchronizationContext());
         }
     }
 }

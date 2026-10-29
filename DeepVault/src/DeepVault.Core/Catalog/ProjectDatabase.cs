@@ -325,6 +325,49 @@ CREATE INDEX IF NOT EXISTS ix_restore_items ON restore_items(run_id);
     }
 
     /// <summary>
+    /// Marks a phase stopped without moving its checkpoint: what was found since the last checkpoint is
+    /// saved (so it can be browsed) but is discarded and found again when the phase resumes there.
+    /// </summary>
+    public void MarkPhaseStopped(string phase, string status)
+    {
+        lock (_lock)
+        {
+            FlushLocked();
+            using var c = _db.CreateCommand();
+            c.CommandText = "UPDATE phases SET status=$s, updated=$u WHERE name=$n";
+            c.Parameters.AddWithValue("$s", status); c.Parameters.AddWithValue("$u", DateTime.UtcNow.Ticks); c.Parameters.AddWithValue("$n", phase);
+            c.ExecuteNonQuery();
+        }
+    }
+
+    /// <summary>
+    /// Removes raw-pass finds at or beyond a disk offset before the pass resumes from there, so nothing
+    /// is listed twice. (Version 1.0.0 recorded a stopped scan's checkpoint after the finds that
+    /// followed it; this also repairs projects stopped with that version.)
+    /// </summary>
+    public void DiscardFindsFrom(string phase, long diskOffset)
+    {
+        lock (_lock)
+        {
+            FlushLocked();
+            using var tx = _db.BeginTransaction();
+            foreach (var sql in new[]
+            {
+                "DELETE FROM files WHERE phase=$p AND first_offset >= $o",
+                "DELETE FROM orphan_records WHERE phase=$p AND json_extract(json,'$.Phys') >= $o",
+            })
+            {
+                using var d = _db.CreateCommand();
+                d.Transaction = tx;
+                d.CommandText = sql;
+                d.Parameters.AddWithValue("$p", phase); d.Parameters.AddWithValue("$o", diskOffset);
+                d.ExecuteNonQuery();
+            }
+            tx.Commit();
+        }
+    }
+
+    /// <summary>
     /// Discards rows a phase wrote after its last checkpoint (e.g. after a crash), so resuming from the
     /// checkpoint cannot create duplicates. A phase without a checkpoint loses all of its rows.
     /// </summary>

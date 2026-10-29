@@ -29,7 +29,7 @@ Read SAFETY.md before scanning your real drive.
 
 2. INSTALLING
 -------------
- 1. Unzip DeepVault-1.0.0-win-x64.zip onto your USB drive (or any drive OTHER than the one
+ 1. Unzip DeepVault-1.0.1-win-x64.zip onto your USB drive (or any drive OTHER than the one
     you want to recover), e.g. E:\DeepVault.
  2. Double-click DeepVault.exe. Windows SmartScreen may warn about an unknown publisher
     because this build is not code-signed: choose "More info" > "Run anyway" if you trust it.

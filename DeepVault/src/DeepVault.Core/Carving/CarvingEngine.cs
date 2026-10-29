@@ -72,6 +72,22 @@ public sealed class CarvingEngine
         _bad = badTracker;
     }
 
+    /// <summary>Disk offset where a scan resumed at plan position <paramref name="planPos"/> starts reading.</summary>
+    public static long DiskOffsetAt(IReadOnlyList<Extent> regions, long planPos, int step)
+    {
+        long pos = 0;
+        foreach (var r in regions)
+        {
+            if (pos + r.Length > planPos)
+            {
+                long abs = r.Offset + Math.Max(0, planPos - pos);
+                return abs - (abs - r.Offset) % step;
+            }
+            pos += r.Length;
+        }
+        return long.MaxValue;
+    }
+
     /// <summary>
     /// Scans the regions. <paramref name="resumeAt"/> is a position in "plan bytes" (sum of region
     /// lengths) previously passed to <paramref name="checkpoint"/>. Returns the plan position reached.

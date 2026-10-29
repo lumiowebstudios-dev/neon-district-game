@@ -132,6 +132,7 @@ public sealed class ZipFormat : CarveFormat
         int nameLen = Bytes.U16(lh, 26);
         if (Bytes.U16(lh, 4) > 63 || nameLen == 0 || nameLen > 1024) return null;
         long p = start + 30;
+        int foreign = 0;
         while (p < limit)
         {
             long eocd = src.Find(new byte[] { 0x50, 0x4B, 0x05, 0x06 }, p, limit);
@@ -143,6 +144,15 @@ public sealed class ZipFormat : CarveFormat
             long cdOff = Bytes.U32(e, 16);
             int comment = Bytes.U16(e, 20);
             bool zip64 = cdOff == 0xFFFFFFFF || entries == 0xFFFF;
+            // A consistent end record belonging to another archive means this one's was lost: one that
+            // starts before us means we are an entry inside it; one that starts after us is a later
+            // archive (allow a few, for archives stored uncompressed inside this one). Searching on
+            // would read up to MaxSize for every damaged archive and every entry inside one.
+            if (!zip64 && Bytes.U16(e, 4) == 0 && Bytes.U16(e, 8) == entries && entries > 0)
+            {
+                long owner = eocd - cdSize - cdOff;
+                if (owner < start || (owner > start && ++foreign > 4)) break;
+            }
             if (zip64)
             {
                 long loc = eocd - 20;

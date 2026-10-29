@@ -465,6 +465,10 @@ public sealed class ScanOrchestrator
             long resumeAt = phase?.Status is "running" or "cancelled" ? phase.Position : 0;
             _db.RollbackPhase(PhaseRaw);
             _db.CurrentPhase = PhaseRaw;
+            if (phase != null) _db.DiscardFindsFrom(PhaseRaw, CarvingEngine.DiskOffsetAt(plan, resumeAt, new CarvingOptions().Step));
+            // Baseline: what exists now is kept if the pass is stopped before its first checkpoint.
+            _db.Checkpoint(PhaseRaw, "running", resumeAt);
+            long filesBefore = _db.CountView(ResultView.All), orphansBefore = _db.Count;
             if (resumeAt > 0)
             {
                 _db.AddIssue(new ScanIssue(IssueSeverity.Info, EngineId.SignatureCarving, $"Resuming the deep scan at {Bytes.FormatSize(resumeAt)} of {Bytes.FormatSize(planTotal)}."));
@@ -482,18 +486,19 @@ public sealed class ScanOrchestrator
                     _db.SetMetaJson("lost_candidates", lpd.Candidates.Select(c => c.Offset).ToList());
                     _db.Checkpoint(PhaseRaw, "running", pos);
                     _p.LostPartitionsFound = lpd.Candidates.Count;
-                    _p.OrphanRecordsFound = omc?.Found ?? 0;
+                    _p.OrphanRecordsFound = orphansBefore + (omc?.Found ?? 0);
                 }, new SyncProgress<EngineProgress>(e =>
                 {
                     _p.LostPartitionsFound = lpd.Candidates.Count;
-                    _p.OrphanRecordsFound = omc?.Found ?? 0;
-                    EngineProgressAdapter(0).Report(e);
+                    _p.OrphanRecordsFound = orphansBefore + (omc?.Found ?? 0);
+                    EngineProgressAdapter(filesBefore).Report(e);
                 }), ct);
             }
             catch (OperationCanceledException)
             {
-                // Persist what was found up to the last checkpoint; record the unscanned remainder honestly.
-                _db.Checkpoint(PhaseRaw, "cancelled", reached);
+                // Keep the last checkpoint: finds made after it are saved for browsing but are found
+                // again (not duplicated) when the scan resumes there. Record the unscanned remainder honestly.
+                _db.MarkPhaseStopped(PhaseRaw, "cancelled");
                 _db.Report(new DiskRegion(reached, planTotal - reached, RegionKind.NotReachedCancelled, $"{Bytes.FormatSize(planTotal - reached)} of the planned deep scan was not reached (offset is a position in the scan plan, not on disk)"));
                 _db.Commit();
                 throw;

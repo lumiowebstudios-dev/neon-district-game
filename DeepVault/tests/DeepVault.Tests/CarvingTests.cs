@@ -98,3 +98,77 @@ public class CustomSignatureTests
         public void Dispose() { }
     }
 }
+
+/// <summary>Carving must read each disk area a bounded number of times, however damaged the data is.</summary>
+public class CarvingReadVolumeTests
+{
+    private sealed class CountingSource : Core.IO.IBlockSource
+    {
+        private readonly byte[] _b;
+        public long BytesRead;
+        public CountingSource(byte[] b) => _b = b;
+        public long Length => _b.Length;
+        public int SectorSize => 512;
+        public string Description => "mem";
+        public int Read(long o, Span<byte> buf) { int n = (int)Math.Max(0, Math.Min(buf.Length, _b.Length - o)); _b.AsSpan((int)o, n).CopyTo(buf); BytesRead += n; return n; }
+        public void Dispose() { }
+    }
+
+    [Fact]
+    public void Remembered_search_returns_the_same_matches_as_a_plain_search()
+    {
+        var rnd = new Random(42);
+        var data = new byte[3 * 1024 * 1024];
+        rnd.NextBytes(data);
+        var pat = new byte[] { 0x50, 0x4B, 0x05, 0x06 };
+        for (int i = 0; i < 300; i++) pat.CopyTo(data, rnd.Next(data.Length - 4));
+        pat.CopyTo(data, data.Length - 4);
+        var plain = new ByteArrayCarveSource(data);
+        var cached = new CachedCarveSource(new CachedReader(new ResilientReader(new CountingSource(data), null)));
+        long from = 0;
+        for (int q = 0; q < 3000; q++)
+        {
+            from = rnd.Next(4) == 0 ? rnd.Next(data.Length) : Math.Min(data.Length - 1, from + rnd.Next(20000));
+            long limit = rnd.Next(3) == 0 ? data.Length : Math.Min(data.Length, from + rnd.Next(1, 400000));
+            Assert.Equal(plain.Find(pat, from, limit), cached.Find(pat, from, limit));
+        }
+    }
+
+    [Fact]
+    public void Damaged_zip_entries_do_not_each_search_the_rest_of_the_disk()
+    {
+        static byte[] Zip(int entries, int seed)
+        {
+            var ms = new MemoryStream();
+            using (var z = new System.IO.Compression.ZipArchive(ms, System.IO.Compression.ZipArchiveMode.Create, true))
+                for (int i = 0; i < entries; i++)
+                {
+                    using var s = z.CreateEntry($"dir/file{i}.txt", System.IO.Compression.CompressionLevel.NoCompression).Open();
+                    var b = new byte[3000]; new Random(seed + i).NextBytes(b); s.Write(b);
+                }
+            return ms.ToArray();
+        }
+        // Thirty archives whose central directory was overwritten, then an intact one: without a bound,
+        // each damaged archive searches all the way to the end of the disk for its end record.
+        var img = new byte[48 * 1024 * 1024];
+        var damagedAt = new List<long>();
+        long pos = 4096;
+        for (int k = 0; k < 30; k++)
+        {
+            var damaged = Zip(20, 100 * k);
+            damaged.AsSpan(damaged.Length * 3 / 4).Fill(0x11);
+            damaged.CopyTo(img, pos);
+            damagedAt.Add(pos);
+            pos = CarveIO.AlignUp(pos + damaged.Length, 4096);
+        }
+        var intact = Zip(10, 5000);
+        long intactAt = pos;
+        intact.CopyTo(img, intactAt);
+        var src = new CountingSource(img);
+        var sink = new ListSink();
+        new CarvingEngine(src, new ResilientReader(src, null), sink, SignatureRegistry.Create()).Run(new[] { new Extent(0, img.Length) }, 0, null, null, default);
+        foreach (var at in damagedAt) Assert.Contains(sink.Files, f => f.FirstOffset == at && f.Structure == StructureCheck.Damaged);
+        Assert.Contains(sink.Files, f => f.FirstOffset == intactAt && f.Structure == StructureCheck.Verified && f.Size == intact.Length);
+        Assert.True(src.BytesRead < 3L * img.Length, $"read {src.BytesRead:N0} bytes to carve {img.Length:N0}");
+    }
+}

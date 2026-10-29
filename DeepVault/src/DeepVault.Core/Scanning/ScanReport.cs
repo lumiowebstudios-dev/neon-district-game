@@ -21,7 +21,7 @@ public static class ScanReport
           .Append("table{border-collapse:collapse;margin:8px 0 18px}td,th{border:1px solid #d0d7de;padding:4px 8px;text-align:left;font-size:13px}th{background:#f3f4f6}.warn{background:#fff8c5;border:1px solid #d4a72c;padding:8px 12px}</style></head><body>");
         sb.Append("<h1>DeepVault scan report</h1>");
         sb.Append($"<p><b>Source:</b> {E(src?.Describe())} ({E(src?.Kind)})<br><b>Mode:</b> {E(db.GetMeta("mode"))}<br><b>Started:</b> {E(db.GetMeta("scan_started"))}<br><b>Finished:</b> {E(db.GetMeta("scan_finished"))}<br>");
-        sb.Append($"<b>Outcome:</b> {E(db.GetMeta("scan_status"))}{(sum != null ? $" in {sum.Duration:hh\\:mm\\:ss}" : "")}<br><b>Methods:</b> {E(opt?.Methods.ToString())}; scope {E(opt?.Scope.ToString())}</p>");
+        sb.Append($"<b>Outcome:</b> {E(db.GetMeta("scan_status"))}{(sum != null ? $" in {Bytes.FormatDuration(sum.Duration)}" : "")}<br><b>Methods:</b> {E(opt?.Methods.ToString())}; scope {E(opt?.Scope.ToString())}</p>");
         if (sum != null && !sum.IsExhaustive)
             sb.Append("<p class=\"warn\">This scan is <b>not exhaustive</b>: it was stopped, or some areas could not be read. See the regions below.</p>");
         if (sum != null)

@@ -4,7 +4,7 @@ param([switch]$SkipTests)
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
 $out = Join-Path $PSScriptRoot 'artifacts'
-$pkg = Join-Path $out 'DeepVault-1.0.0-win-x64'
+$pkg = Join-Path $out 'DeepVault-1.0.1-win-x64'
 if (Test-Path $pkg) { Remove-Item -Recurse -Force $pkg }
 if (-not $SkipTests) { dotnet test tests/DeepVault.Tests -c Release; if ($LASTEXITCODE) { throw 'tests failed' } }
 dotnet publish src/DeepVault.App -c Release -r win-x64 --self-contained true -o $pkg; if ($LASTEXITCODE) { throw 'publish failed' }

@@ -256,6 +256,56 @@ public class DeepScanTests
         }.Save();
     }
 
+    [Theory]
+    [InlineData("carve_raw", 1024 * 1024, false)]        // stopped between checkpoints
+    [InlineData("carve_raw", 64L * 1024 * 1024, false)]  // stopped before the first checkpoint
+    [InlineData("carve_raw", 1024 * 1024, true)]         // project stopped by version 1.0.0
+    [InlineData("reformatted_ntfs", 1024 * 1024, false)] // previous-file-system records collected during the pass
+    [InlineData("reformatted_ntfs", 1024 * 1024, true)]
+    public void Resumed_scan_lists_nothing_twice(string fixture, long checkpointInterval, bool stoppedByOldVersion)
+    {
+        var fx = Fixtures.Get(fixture);
+        using var src = new FileBlockSource(fx.ImagePath);
+        var opt = new ScanOptions { CheckpointInterval = checkpointInterval, ReadChunkSize = 64 * 1024 };
+        static List<(long, long, string, string?)> Files(ProjectDatabase db) =>
+            new[] { ResultView.All, ResultView.Duplicates }.SelectMany(v => db.QueryFiles(new FileQuery { Limit = 1000000, View = v }))
+                .Select(f => (f.FirstOffset, f.Size, f.Name, f.Path)).OrderBy(x => x).ToList();
+        var (refDb, _) = Scan(src, opt);
+        var expected = Files(refDb);
+        long expectedOrphans = refDb.Count;
+        refDb.Dispose();
+
+        foreach (int tenths in new[] { 2, 4, 6, 8 })
+        {
+            var path = Path.Combine(Fixtures.NewTempDir("resume2"), "r" + ProjectDatabase.FileExtension);
+            using var cts = new CancellationTokenSource();
+            long stopAt = -1;
+            var progress = new SyncProgress<ScanProgress>(p =>
+            {
+                if (p.Unit != "bytes" || p.Total <= 0) return;
+                if (stopAt < 0) stopAt = p.Total * tenths / 10;
+                if (p.Done > stopAt) cts.Cancel();
+            });
+            var (db1, s1) = Scan(src, opt, progress, cts.Token, path);
+            Assert.Equal(ScanOutcome.Cancelled, s1.Outcome);
+            if (stoppedByOldVersion)
+            {
+                // 1.0.0 recorded the stop as a checkpoint at the last checkpoint position, but with the ids of everything found until the stop.
+                var ph = db1.GetPhase(ScanOrchestrator.PhaseRaw)!;
+                db1.Checkpoint(ScanOrchestrator.PhaseRaw, "cancelled", ph.Position);
+            }
+            db1.Dispose();
+
+            var (db2, s2) = Scan(src, opt, null, default, path);
+            using var _ = db2;
+            Assert.Equal(ScanOutcome.Completed, s2.Outcome);
+            var got = Files(db2);
+            _out.WriteLine($"{fixture} stopped at {tenths}0%: expected {expected.Count} files / {expectedOrphans} records, got {got.Count} / {db2.Count}");
+            Assert.Equal(expected, got);
+            Assert.Equal(expectedOrphans, db2.Count);
+        }
+    }
+
     [Fact]
     public void Deleted_file_whose_data_never_reached_the_disk_is_flagged_before_restore()
     {

@@ -48,6 +48,13 @@ public static class Bytes
         return i == 0 ? $"{bytes} B" : $"{v:0.##} {u[i]}";
     }
 
+    /// <summary>h:mm:ss, with days in front when longer than a day ("hh" alone silently drops whole days).</summary>
+    public static string FormatDuration(TimeSpan t)
+    {
+        if (t < TimeSpan.Zero) t = TimeSpan.Zero;
+        return t.TotalDays >= 1 ? $"{(int)t.TotalDays} d {t:hh\\:mm\\:ss}" : $"{t:hh\\:mm\\:ss}";
+    }
+
     /// <summary>Windows FILETIME (100ns since 1601) to UTC DateTime; null if out of range.</summary>
     public static DateTime? FromFileTime(long ft)
     {

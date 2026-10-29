@@ -130,7 +130,7 @@ Sources are opened read-only. Restores and images are never written to the sourc
             string rate = p.Unit == "bytes" && p.BytesPerSecond > 0 ? $" {Bytes.FormatSize((long)p.BytesPerSecond)}/s" : "";
             Console.Write($"\r[{p.PhaseIndex + 1}/{p.PhaseCount}] {p.Phase}: {pct}{rate}  found {p.FilesFound}  bad sectors {p.BadSectors}      ");
         }), cts.Token);
-        Console.WriteLine($"\n\nResult: {sum.Outcome} in {sum.Duration:hh\\:mm\\:ss}. {sum.FilesFound} candidates. Unreadable sectors: {sum.BadSectors}.");
+        Console.WriteLine($"\n\nResult: {sum.Outcome} in {Bytes.FormatDuration(sum.Duration)}. {sum.FilesFound} candidates. Unreadable sectors: {sum.BadSectors}.");
         if (!sum.IsExhaustive) Console.WriteLine("NOTE: the scan is NOT exhaustive (cancelled, stopped, or areas were unreadable). See 'summary'.");
         return sum.Outcome is ScanOutcome.Failed ? 2 : 0;
     }
