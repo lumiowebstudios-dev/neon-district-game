@@ -556,9 +556,15 @@ public sealed class IssuesViewModel : PageViewModel
     private bool _complete;
     public bool IsComplete { get => _complete; set => Set(ref _complete, value); }
     public ICommand CopyAll { get; }
+    public ICommand OpenReport { get; }
 
     public IssuesViewModel(MainViewModel m) : base(m)
     {
+        OpenReport = new RelayCommand(() =>
+        {
+            var rp = S.Project?.GetMeta("scan_report");
+            if (rp != null && File.Exists(rp)) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(rp) { UseShellExecute = true });
+        }, () => S.Project?.GetMeta("scan_report") is string rp && File.Exists(rp));
         CopyAll = new RelayCommand(() => Clipboard.SetText(string.Join(Environment.NewLine,
             Regions.Select(r => $"{r.Severity}\t{r.Where}\t{r.Message}").Concat(Issues.Select(i => $"{i.Time}\t{i.Severity}\t{i.Message}")))));
     }

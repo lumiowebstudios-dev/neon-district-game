@@ -24,6 +24,7 @@ public static class Program
                     [--flat] [--skip-existing]
   deepvault-cli image <image-file | disk:N> --out <file.img> [--start BYTES --length BYTES]
   deepvault-cli summary <file.dvproj>
+  deepvault-cli scan-report <file.dvproj> --out <report.html>
   deepvault-cli formats | engines
 
 Sources are opened read-only. Restores and images are never written to the source disk.";
@@ -41,6 +42,7 @@ Sources are opened read-only. Restores and images are never written to the sourc
                 "restore" => Restore(args),
                 "image" => Image(args),
                 "summary" => Summary(args),
+                "scan-report" => ScanReportCmd(args),
                 "formats" => Formats(),
                 "engines" => Engines(),
                 _ => Fail($"Unknown command '{args[0]}'.\n\n{Usage}"),
@@ -207,6 +209,15 @@ Sources are opened read-only. Restores and images are never written to the sourc
         foreach (ResultView v in Enum.GetValues<ResultView>()) Console.WriteLine($"  {v}: {db.CountView(v)}");
         foreach (var r in db.GetRegions()) Console.WriteLine($"  region: {r.Kind} @{r.Offset} {Bytes.FormatSize(r.Length)} {r.Note}");
         foreach (var (t, i) in db.GetIssues().Where(x => x.issue.Severity >= IssueSeverity.Warning)) Console.WriteLine($"  {i.Severity}: {i.Message}");
+        return 0;
+    }
+
+    private static int ScanReportCmd(string[] a)
+    {
+        using var db = ProjectDatabase.Open(a[1]);
+        var o = Opt(a, "--out") ?? throw new ArgumentException("scan-report: --out is required");
+        Core.Scanning.ScanReport.Write(db, o);
+        Console.WriteLine($"Written {o}");
         return 0;
     }
 

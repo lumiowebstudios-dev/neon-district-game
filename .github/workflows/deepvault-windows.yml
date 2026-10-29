@@ -1,0 +1,60 @@
+name: DeepVault (Windows)
+
+on:
+  push:
+    paths:
+      - 'DeepVault/**'
+      - '.github/workflows/deepvault-windows.yml'
+  workflow_dispatch:
+
+jobs:
+  build-test-package:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: DeepVault
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Unit and scenario tests
+        run: dotnet test tests/DeepVault.Tests -c Release --logger "trx;LogFileName=results.trx" --results-directory ../ci-out/tests
+        env:
+          DEEPVAULT_SCENARIO_DIR: ${{ github.workspace }}\ci-out\scenarios
+
+      - name: Publish application and CLI (win-x64, self-contained)
+        run: |
+          dotnet publish src/DeepVault.App -c Release -r win-x64 --self-contained true -o ../ci-out/DeepVault
+          dotnet publish src/DeepVault.Cli -c Release -r win-x64 --self-contained true -o ../ci-out/DeepVault
+
+      - name: End-to-end recovery from a real NTFS disk (VHD) deleted by Windows
+        shell: pwsh
+        run: ./tools/ci/windows-e2e.ps1 -Cli ../ci-out/DeepVault/deepvault-cli.exe -Samples tests/fixtures/samples -Work ../ci-out/e2e
+
+      - name: GUI self-test (launches DeepVault.exe and drives every page)
+        shell: pwsh
+        run: |
+          $img = "${{ github.workspace }}\ci-out\selftest\disk.img"
+          New-Item -ItemType Directory -Force (Split-Path $img) | Out-Null
+          $in = [IO.File]::OpenRead("tests\fixtures\images\ntfs_deleted.img.gz")
+          $gz = New-Object IO.Compression.GZipStream($in, [IO.Compression.CompressionMode]::Decompress)
+          $out = [IO.File]::Create($img); $gz.CopyTo($out); $out.Close(); $gz.Close()
+          $p = Start-Process -FilePath "..\ci-out\DeepVault\DeepVault.exe" -ArgumentList "--selftest", "`"$img`"", "`"${{ github.workspace }}\ci-out\selftest\out`"" -PassThru -Wait
+          Get-Content "${{ github.workspace }}\ci-out\selftest\out\selftest-result.json"
+          if ($p.ExitCode -ne 0) { throw "GUI self-test failed with exit code $($p.ExitCode)" }
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deepvault-windows-ci
+          path: |
+            ci-out/tests
+            ci-out/scenarios
+            ci-out/e2e/*.json
+            ci-out/e2e/restored/**/*.html
+            ci-out/selftest/out/*.png
+            ci-out/selftest/out/*.json

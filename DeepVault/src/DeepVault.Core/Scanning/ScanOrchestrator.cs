@@ -198,6 +198,13 @@ public sealed class ScanOrchestrator
         _db.SetMeta("scan_status", summary.Outcome.ToString());
         _db.SetMeta("scan_finished", DateTime.UtcNow.ToString("O"));
         _db.SetMetaJson("scan_summary", summary);
+        try
+        {
+            var rp = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(_db.Path))!, $"{Path.GetFileNameWithoutExtension(_db.Path)}-scan-report-{DateTime.Now:yyyyMMdd-HHmmss}.html");
+            ScanReport.Write(_db, rp);
+            _db.SetMeta("scan_report", rp);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _log.Warn($"Scan report not written: {ex.Message}"); }
         _log.Info($"Scan finished: {summary.Outcome}, files={summary.FilesFound}, badSectors={summary.BadSectors}, duration={summary.Duration}");
         return summary;
     }

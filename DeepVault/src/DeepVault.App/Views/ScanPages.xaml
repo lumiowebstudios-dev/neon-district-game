@@ -384,6 +384,7 @@
                 </DataGrid>
                 <DockPanel>
                     <Button DockPanel.Dock="Right" Content="Copy to clipboard" Command="{Binding CopyAll}" Margin="0,0,0,8"/>
+                    <Button DockPanel.Dock="Right" Content="Open scan report" Command="{Binding OpenReport}" Margin="0,0,8,8"/>
                     <TextBlock Text="Engine messages" Style="{StaticResource H2}"/>
                 </DockPanel>
             </StackPanel>
