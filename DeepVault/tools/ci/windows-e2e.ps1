@@ -55,6 +55,10 @@ try {
     Copy-Item (Join-Path $Samples 'family_large.jpg') "${letter}:\Photos\family_large.jpg"
     $targets += @{ dir = 'Photos'; name = 'family_large.jpg' }
     Get-ChildItem "${letter}:\Filler" | Remove-Item
+    # Make sure the data reached the disk before deleting (on a real PC this happens within seconds;
+    # files deleted while still in the write cache never reach the disk and cannot be recovered).
+    Write-VolumeCache -DriveLetter $letter
+    Start-Sleep 5
 
     Step 'Delete the files with Windows'
     foreach ($t in $targets) { Remove-Item "${letter}:\$($t.dir)\$($t.name)" }

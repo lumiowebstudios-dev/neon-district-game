@@ -1,0 +1,9 @@
+DeepVault 1.0
+Copyright (c) 2026. All rights reserved.
+
+This software is provided for the owner's personal data recovery. It is provided "as is", without
+warranty of any kind. Data recovery can never be guaranteed: the authors are not liable for any
+loss of data, damage to hardware, or other damages arising from its use.
+
+Third-party components are used under their own licences, listed in THIRD_PARTY_NOTICES.txt and
+docs/THIRD_PARTY.md.

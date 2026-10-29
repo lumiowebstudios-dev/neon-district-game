@@ -571,6 +571,7 @@ CREATE INDEX IF NOT EXISTS ix_restore_items ON restore_items(run_id);
             ("$s", (int)state), ("$st", structure is null ? null : (int)structure.Value), ("$n", appendNote), ("$i", id));
     }
 
+    public void UpdateConfidence(long id, Confidence c) => Exec("UPDATE files SET confidence=$c WHERE id=$i", ("$c", (int)c), ("$i", id));
     public void SetContentHash(long id, string hash) => Exec("UPDATE files SET content_hash=$h WHERE id=$i", ("$h", hash), ("$i", id));
     public void MarkDuplicate(long id, long of) => Exec("UPDATE files SET duplicate_of=$o WHERE id=$i", ("$o", of), ("$i", id));
     public void AddEngine(long id, EngineId e, StructureCheck? upgrade)
@@ -626,6 +627,21 @@ CREATE INDEX IF NOT EXISTS ix_restore_items ON restore_items(run_id);
             foreach (var d in g.Skip(1)) { MarkDuplicate(d.id, keep.id); n++; }
         }
         return n;
+    }
+
+    /// <summary>Deleted, metadata-found candidates whose content has not been checked yet, in disk order.</summary>
+    public List<FoundFile> UncheckedDeletedCandidates()
+    {
+        Commit();
+        var list = new List<FoundFile>();
+        lock (_lock)
+        {
+            using var c = _db.CreateCommand();
+            c.CommandText = "SELECT * FROM files WHERE structure = 0 AND state IN (0,1) AND (is_deleted = 1 OR is_deleted IS NULL) AND (engines & 16) = 0 AND size > 0 AND first_offset >= 0 AND duplicate_of IS NULL ORDER BY first_offset";
+            using var r = c.ExecuteReader();
+            while (r.Read()) list.Add(Read(r));
+        }
+        return list;
     }
 
     public List<DiskRegion> GetRegions()

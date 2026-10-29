@@ -65,3 +65,36 @@ public class CarvingTests
         }
     }
 }
+
+public class CustomSignatureTests
+{
+    [Fact]
+    public void Sample_custom_signature_file_loads_and_carves_header_footer_files()
+    {
+        var dir = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(dir, "DeepVault.sln"))) dir = Path.GetDirectoryName(dir)!;
+        var reg = SignatureRegistry.Create(Path.Combine(dir, "docs", "custom-signatures.sample.json"));
+        Assert.Empty(reg.LoadErrors);
+        Assert.Contains(reg.Formats, f => f.Id == "custom:eps");
+        var eps = System.Text.Encoding.ASCII.GetBytes("%!PS-Adobe-3.0 EPSF\n" + new string('x', 3000) + "\n%%EOF");
+        var img = new byte[64 * 1024];
+        eps.CopyTo(img, 4096);
+        var sink = new ListSink();
+        using var src = new Core.IO.SubRangeSource(new MemSource(img), 0, img.Length);
+        new CarvingEngine(src, new ResilientReader(src, null), sink, reg).Run(new[] { new Extent(0, img.Length) }, 0, null, null, default);
+        var hit = Assert.Single(sink.Files, f => f.Extension == "eps");
+        Assert.Equal(4096, hit.FirstOffset);
+        Assert.Equal(eps.Length, hit.Size);
+    }
+
+    private sealed class MemSource : Core.IO.IBlockSource
+    {
+        private readonly byte[] _b;
+        public MemSource(byte[] b) => _b = b;
+        public long Length => _b.Length;
+        public int SectorSize => 512;
+        public string Description => "mem";
+        public int Read(long o, Span<byte> buf) { int n = (int)Math.Min(buf.Length, _b.Length - o); _b.AsSpan((int)o, n).CopyTo(buf); return n; }
+        public void Dispose() { }
+    }
+}

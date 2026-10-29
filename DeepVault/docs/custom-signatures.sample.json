@@ -1,0 +1,10 @@
+{
+  "signatures": [
+    { "id": "kdbx", "name": "KeePass 2 database", "extension": "kdbx", "category": "Database",
+      "header": "03D9A29A67FB4BB5", "maxSize": 104857600 },
+    { "id": "eps", "name": "Encapsulated PostScript", "extension": "eps", "category": "Image",
+      "header": "25215053 2D41646F6265", "footer": "2525454F46", "maxSize": 268435456 },
+    { "id": "mdb", "name": "Access database (Jet)", "extension": "mdb", "category": "Database",
+      "header": "5374616E64617264204A6574204442", "headerOffset": 4, "maxSize": 2147483648, "enabled": false }
+  ]
+}

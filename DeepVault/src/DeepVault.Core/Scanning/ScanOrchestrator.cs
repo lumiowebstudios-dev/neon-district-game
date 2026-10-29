@@ -164,10 +164,11 @@ public sealed class ScanOrchestrator
                 summary.MethodsRun.Add("Previous file-system MFT records");
             }
 
-            // 6. Correlation / deduplication.
-            Enter(phaseIdx, "Combining results");
+            // 6. Correlation / deduplication, then content checks of named candidates.
+            Enter(phaseIdx, "Combining results and checking content");
             _db.CurrentPhase = PhaseCorrelate;
             summary.Correlated = _db.CorrelateCarvedWithMetadata();
+            CheckContent(ct);
             _db.Checkpoint(PhaseCorrelate, "done", summary.Correlated);
 
             summary.BadSectors = _reader.TotalBadSectors;
@@ -207,6 +208,60 @@ public sealed class ScanOrchestrator
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _log.Warn($"Scan report not written: {ex.Message}"); }
         _log.Info($"Scan finished: {summary.Outcome}, files={summary.FilesFound}, badSectors={summary.BadSectors}, duration={summary.Duration}");
         return summary;
+    }
+
+    /// <summary>
+    /// Reads deleted candidates found by file-system metadata (in disk order) and checks their content:
+    /// files up to the validation limit are structure-validated in full, larger ones get a header check.
+    /// Content that is all zeros or does not match its type is marked damaged before the user restores it.
+    /// </summary>
+    private void CheckContent(CancellationToken ct)
+    {
+        var todo = _db.UncheckedDeletedCandidates();
+        if (todo.Count == 0) return;
+        var prog = new EngineProgress { Phase = "Checking content of deleted files", Unit = "files", Total = todo.Count };
+        var report = EngineProgressAdapter(0);
+        int damaged = 0, done = 0;
+        foreach (var f in todo)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (++done % 64 == 0) { prog.Done = done; report.Report(prog); }
+            if (!FormatValidator.ExpectsSignature(f.Extension) && f.Size > 4096) continue;
+            using var cs = new ContentStream(_reader, f.Layout);
+            Stream s = f.Size <= _opt.ValidateUpTo ? cs : new HeadStream(cs, 64 * 1024);
+            FormatValidator.Validation v;
+            var head = new byte[Math.Min(4096, f.Size)];
+            cs.ReadExactly(head);
+            cs.Position = 0;
+            if (Bytes.IsAllZero(head)) v = new FormatValidator.Validation(StructureCheck.Damaged, "content is all zeros (never written, wiped or overwritten)", null);
+            else if (f.Size <= _opt.ValidateUpTo) v = FormatValidator.Validate(new StreamCarveSource(cs), f.Extension);
+            else
+            {
+                v = FormatValidator.Validate(new StreamCarveSource(s), f.Extension);
+                if (v.Check is StructureCheck.Damaged && v.Note?.Contains("header") != true) v = new FormatValidator.Validation(StructureCheck.Plausible, "header valid (file too large for a full check during the scan)", null);
+            }
+            if (v.Check == StructureCheck.NotChecked) continue;
+            bool bad = v.Check == StructureCheck.Damaged;
+            if (bad) damaged++;
+            _db.UpdateState(f.Id, bad ? RecoveryState.PartialOrDamaged : f.State, v.Check, bad ? "content check: " + v.Note : null);
+            if (bad) _db.UpdateConfidence(f.Id, Confidence.Low);
+        }
+        _db.AddIssue(new ScanIssue(IssueSeverity.Info, EngineId.None, $"Content check of {todo.Count:N0} deleted files: {damaged:N0} are damaged or empty."));
+    }
+
+    /// <summary>Exposes only the first bytes of a stream (header checks of large files).</summary>
+    private sealed class HeadStream : Stream
+    {
+        private readonly Stream _s; private readonly long _n;
+        public HeadStream(Stream s, long n) { _s = s; _n = Math.Min(n, s.Length); }
+        public override bool CanRead => true; public override bool CanSeek => true; public override bool CanWrite => false;
+        public override long Length => _n;
+        public override long Position { get => _s.Position; set => _s.Position = Math.Min(value, _n); }
+        public override int Read(byte[] b, int o, int c) => _s.Position >= _n ? 0 : _s.Read(b, o, (int)Math.Min(c, _n - _s.Position));
+        public override long Seek(long o, SeekOrigin so) => Position = so == SeekOrigin.Begin ? o : so == SeekOrigin.Current ? Position + o : _n + o;
+        public override void Flush() { }
+        public override void SetLength(long v) => throw new NotSupportedException();
+        public override void Write(byte[] b, int o, int c) => throw new NotSupportedException();
     }
 
     private List<string> PlannedPhases()

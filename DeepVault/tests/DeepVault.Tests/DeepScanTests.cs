@@ -252,4 +252,33 @@ public class DeepScanTests
             Details = { $"{partial} candidates before cancellation; {got.Count} after resume; uninterrupted scan: {expected.Count}; identical sets: {expected.SequenceEqual(got)}" },
         }.Save();
     }
+
+    [Fact]
+    public void Deleted_file_whose_data_never_reached_the_disk_is_flagged_before_restore()
+    {
+        // Windows can delete a file while its data is still in the write cache: the MFT record survives,
+        // the clusters stay zero. The scan must not present such a file as recoverable.
+        var fx = Fixtures.Get("ntfs_deleted");
+        var copy = Path.Combine(Fixtures.NewTempDir("zeroed"), "z.img");
+        File.Copy(fx.ImagePath, copy);
+        long off, len;
+        using (var src0 = new FileBlockSource(copy))
+        {
+            var (db0, _) = Scan(src0, new ScanOptions { Methods = ScanMethods.Quick });
+            var f0 = db0.QueryFiles(new FileQuery { Search = "holiday_beach.jpg" }).Single();
+            off = f0.FirstOffset; len = f0.Size;
+            db0.Dispose();
+        }
+        using (var fs = new FileStream(copy, FileMode.Open, FileAccess.Write)) { fs.Position = off; fs.Write(new byte[len]); }
+        using var src = new FileBlockSource(copy);
+        var (db, _) = Scan(src);
+        using var __ = db;
+        var f = db.QueryFiles(new FileQuery { Search = "holiday_beach.jpg", View = ResultView.All }).Single();
+        Assert.Equal(StructureCheck.Damaged, f.Structure);
+        Assert.Equal(RecoveryState.PartialOrDamaged, f.State);
+        Assert.Contains("zeros", f.Notes);
+        // Intact deleted files are confirmed by the same check.
+        var png = db.QueryFiles(new FileQuery { Search = "diagram.png" }).Single();
+        Assert.Equal(StructureCheck.Verified, png.Structure);
+    }
 }
