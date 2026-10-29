@@ -88,10 +88,10 @@ public static class PdfTextExtractor
                 switch (op)
                 {
                     case "BT": inText = true; pending.Clear(); break;
-                    case "ET": inText = false; sb.Append('\n'); pending.Clear(); break;
+                    case "ET": inText = false; NewLine(sb); pending.Clear(); break;
                     case "Tj" or "TJ" when inText: sb.Append(pending); pending.Clear(); break;
-                    case "'" or "\"" when inText: sb.Append('\n').Append(pending); pending.Clear(); break;
-                    case "T*" or "Td" or "TD" when inText: sb.Append('\n'); pending.Clear(); break;
+                    case "'" or "\"" when inText: NewLine(sb); sb.Append(pending); pending.Clear(); break;
+                    case "T*" or "Td" or "TD" when inText: NewLine(sb); pending.Clear(); break;
                     default: if (op != "Tf" && op != "Tc" && op != "Tw" && op != "Tz" && op != "TL") pending.Clear(); break;
                 }
                 continue;
@@ -100,6 +100,8 @@ public static class PdfTextExtractor
             i++;
         }
     }
+
+    private static void NewLine(StringBuilder sb) { if (sb.Length > 0 && sb[^1] != '\n') sb.Append('\n'); }
 
     private static string ReadLiteral(string c, ref int i)
     {
