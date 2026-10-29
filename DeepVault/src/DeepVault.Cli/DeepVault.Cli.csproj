@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>deepvault-cli</AssemblyName>
+    <RootNamespace>DeepVault.Cli</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DeepVault.Core\DeepVault.Core.csproj" />
+    <ProjectReference Include="..\DeepVault.Platform.Windows\DeepVault.Platform.Windows.csproj" />
+  </ItemGroup>
+</Project>

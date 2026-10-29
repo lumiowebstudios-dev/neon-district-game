@@ -1,0 +1,721 @@
+{
+ "generated_by": "tools/fixtures/make_images.py",
+ "images": [
+  {
+   "name": "ntfs_deleted",
+   "file": "ntfs_deleted.img.gz",
+   "size": 50331648,
+   "sha256": "b9f5621c988661317461c40865558e19d5c7c73397fed20e53f533e91ea301e3",
+   "scenario": "NTFS volume; files deleted through ntfs-3g (one fragmented, one LZNT1-compressed, one resident, one deleted directory)",
+   "files": [
+    {
+     "name": "holiday_beach.jpg",
+     "path": "\\Photos\\2019",
+     "size": 29754,
+     "sha256": "de55da4c8d2f12cf5ed228fe586c65b06b7003efcfaa6a1bff66da76933a1d88",
+     "deleted": true,
+     "expect": "exact",
+     "resident": false
+    },
+    {
+     "name": "animation.gif",
+     "path": "\\Photos\\2019",
+     "size": 10700,
+     "sha256": "7944911b18f8f75a7692ae2f6413b9d482f0f91f95c883e44c84f8cfe66f7d29",
+     "deleted": true,
+     "expect": "exact",
+     "resident": false
+    },
+    {
+     "name": "diagram.png",
+     "path": "\\Photos",
+     "size": 67746,
+     "sha256": "0ffba0b286e892a9ce5ee5c2677e5b9ca06d65e82466d83a0b6cc92c829ab2b1",
+     "deleted": true,
+     "expect": "exact",
+     "resident": false
+    },
+    {
+     "name": "invoice_2019.pdf",
+     "path": "\\Documents",
+     "size": 3853,
+     "sha256": "41517bee76076286b75921c3cc5c25ec53e312b558b13fdb65580b3d8fce9b27",
+     "deleted": true,
+     "expect": "exact",
+     "resident": false
+    },
+    {
+     "name": "thesis.docx",
+     "path": "\\Documents",
+     "size": 1452,
+     "sha256": "efd5cebf91c61471af6b485f9f6d43743b273f5b9c226c67ce001d190e47f8e5",
+     "deleted": true,
+     "expect": "exact",
+     "resident": false
+    },
+    {
+     "name": "old_report.doc",
+     "path": "\\Documents",
+     "size": 15876,
+     "sha256": "4e69f7d645ed15d274ed2c8a9bc0e22f44a24b7382a3b93eda54638ac9bb6386",
+     "deleted": true,
+     "expect": "exact",
+     "resident": false
+    },
+    {
+     "name": "tiny.txt",
+     "path": "\\Documents",
+     "size": 20,
+     "sha256": "d8a662305f71ae2cb914209fcd0dac3cecd0df0ead331941e82ad6cae3f32d63",
+     "deleted": true,
+     "expect": "exact",
+     "resident": true
+    },
+    {
+     "name": "notes.txt",
+     "path": "\\Documents",
+     "size": 14590,
+     "sha256": "28aa5aab537e23460cf39c7a2cbd4a5a034a945a85e6dd660cdf7960ad4af20d",
+     "deleted": true,
+     "expect": "exact",
+     "resident": false
+    },
+    {
+     "name": "letter.rtf",
+     "path": "\\Documents",
+     "size": 2803,
+     "sha256": "050d526da600d6db92c0d1ad5901b241eccd7a5eaaa721e2109bd6586afea1de",
+     "deleted": true,
+     "expect": "exact",
+     "resident": false
+    },
+    {
+     "name": "song.mp3",
+     "path": "\\Music",
+     "size": 16574,
+     "sha256": "0471a4937dca2f573ec399e828facab5083bdb47b00cc61820bd32bde7f696ba",
+     "deleted": true,
+     "expect": "exact",
+     "resident": false
+    },
+    {
+     "name": "memo.wav",
+     "path": "\\Music",
+     "size": 16044,
+     "sha256": "177c46f7331707a814d6eda699bf38d12e13af966ddba95a6e95b43b4ce7f0eb",
+     "deleted": true,
+     "expect": "exact",
+     "resident": false
+    },
+    {
+     "name": "lossless.flac",
+     "path": "\\Music",
+     "size": 20658,
+     "sha256": "7424229127d202209f888d6267eb13704ef8bd2dcbd21df31fb79c0283871f10",
+     "deleted": true,
+     "expect": "exact",
+     "resident": false
+    },
+    {
+     "name": "family_large.jpg",
+     "path": "\\Photos",
+     "size": 365549,
+     "sha256": "eeb73c62a21919cbd4b40be8ee1ac56b60fd4df216a98b5dcc2b4aff30049ffc",
+     "deleted": true,
+     "expect": "exact",
+     "fragmented": true
+    },
+    {
+     "name": "compressible.txt",
+     "path": "\\Compressed",
+     "size": 274800,
+     "sha256": "34e670372c03768a6bb62e852875e6a766fd98fff23019740ab2c26d1d24deb9",
+     "deleted": true,
+     "expect": "exact",
+     "ntfs_compressed": true
+    },
+    {
+     "name": "budget.xlsx",
+     "path": "\\Keep",
+     "size": 842,
+     "sha256": "9a4e9532dad69f2277024d84583e367fc7219b3996871b0560eaaad51a6ad366",
+     "deleted": false,
+     "expect": "exact"
+    }
+   ],
+   "partition_offset": 1048576,
+   "compressed_applied": true
+  },
+  {
+   "name": "fat32_deleted",
+   "file": "fat32_deleted.img.gz",
+   "size": 67108864,
+   "sha256": "8bb300bf9f37faf5e8f9d7045707386e38fd28c8ac3729d97e372db5267505e5",
+   "scenario": "FAT32 volume; files and a directory deleted with mtools (mdel/mdeltree)",
+   "files": [
+    {
+     "name": "holiday_beach.jpg",
+     "path": "\\Photos",
+     "size": 29754,
+     "sha256": "de55da4c8d2f12cf5ed228fe586c65b06b7003efcfaa6a1bff66da76933a1d88",
+     "deleted": true,
+     "expect": "exact"
+    },
+    {
+     "name": "phone_photo.webp",
+     "path": "\\Photos",
+     "size": 6628,
+     "sha256": "0c8a5075e754ca43bba599d54116f1b220600fbbc8c9b3d874c5e1e4ff2fecbf",
+     "deleted": true,
+     "expect": "exact"
+    },
+    {
+     "name": "invoice_2019.pdf",
+     "path": "\\Docs",
+     "size": 3853,
+     "sha256": "41517bee76076286b75921c3cc5c25ec53e312b558b13fdb65580b3d8fce9b27",
+     "deleted": true,
+     "expect": "exact"
+    },
+    {
+     "name": "contacts.csv",
+     "path": "\\Docs",
+     "size": 1521,
+     "sha256": "2f482ca2b9c74e1c0dca5647e9820af910d39ba4f44ffe078fae04c8c73c465f",
+     "deleted": true,
+     "expect": "exact"
+    },
+    {
+     "name": "old_budget.xls",
+     "path": "\\Docs\\Old Projects",
+     "size": 7688,
+     "sha256": "cae07a573511d8476175e4b8506a68992ddd5225c4f1d923e7dedbb677156b50",
+     "deleted": true,
+     "expect": "exact"
+    },
+    {
+     "name": "backup.zip",
+     "path": "\\Docs\\Old Projects",
+     "size": 3236,
+     "sha256": "1930ef975a6a97ec6699d1014cd5c4476be62e532142de32ab01f60a887bd46b",
+     "deleted": true,
+     "expect": "exact"
+    },
+    {
+     "name": "A long file name for testing LFN recovery.txt",
+     "path": "\\Docs",
+     "size": 8700,
+     "sha256": "5c5e87d91205c3924a9e211b1c3f25e3c8cd945a3fda600bcf660f3ce9620d22",
+     "deleted": true,
+     "expect": "exact"
+    },
+    {
+     "name": "slides.pptx",
+     "path": "\\Keep",
+     "size": 811,
+     "sha256": "d86860a088fa3877b0ce11cc69b9f4b22729294c79203a63077dc0378b331d94",
+     "deleted": false,
+     "expect": "exact"
+    }
+   ],
+   "partition_offset": 1048576
+  },
+  {
+   "name": "exfat_deleted",
+   "file": "exfat_deleted.img.gz",
+   "size": 50331648,
+   "sha256": "1a34d1e7c82f2d15746e355aad1bdcf6a457967bff07621bd9dde018294c9196",
+   "scenario": "exFAT volume; files deleted through exfat-fuse",
+   "files": [
+    {
+     "name": "clip.mp4",
+     "path": "\\Camera",
+     "size": 5390,
+     "sha256": "a9e062988845453018fd260a3fe9f8cbfbe6acece7ac3557933c9fd10a12f9b0",
+     "deleted": true,
+     "expect": "exact"
+    },
+    {
+     "name": "holiday_beach.jpg",
+     "path": "\\Camera",
+     "size": 29754,
+     "sha256": "de55da4c8d2f12cf5ed228fe586c65b06b7003efcfaa6a1bff66da76933a1d88",
+     "deleted": true,
+     "expect": "exact"
+    },
+    {
+     "name": "song.mp3",
+     "path": "\\Camera",
+     "size": 16574,
+     "sha256": "0471a4937dca2f573ec399e828facab5083bdb47b00cc61820bd32bde7f696ba",
+     "deleted": true,
+     "expect": "exact"
+    },
+    {
+     "name": "invoice_2019.pdf",
+     "path": "\\Camera",
+     "size": 3853,
+     "sha256": "41517bee76076286b75921c3cc5c25ec53e312b558b13fdb65580b3d8fce9b27",
+     "deleted": true,
+     "expect": "exact"
+    },
+    {
+     "name": "notes.txt",
+     "path": "\\",
+     "size": 14590,
+     "sha256": "28aa5aab537e23460cf39c7a2cbd4a5a034a945a85e6dd660cdf7960ad4af20d",
+     "deleted": false,
+     "expect": "exact"
+    }
+   ],
+   "partition_offset": 1048576
+  },
+  {
+   "name": "carve_raw",
+   "file": "carve_raw.img.gz",
+   "size": 25165824,
+   "sha256": "eedcc60529954c0bcd34aceefdd71f82811234d9f482206c228fb0eca1b40b60",
+   "scenario": "No file system: files at sector-aligned offsets separated by random/zero gaps, plus truncated/fragmented/corrupt files",
+   "files": [
+    {
+     "name": "holiday_beach.jpg",
+     "path": null,
+     "size": 29754,
+     "sha256": "de55da4c8d2f12cf5ed228fe586c65b06b7003efcfaa6a1bff66da76933a1d88",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 65536
+    },
+    {
+     "name": "diagram.png",
+     "path": null,
+     "size": 67746,
+     "sha256": "0ffba0b286e892a9ce5ee5c2677e5b9ca06d65e82466d83a0b6cc92c829ab2b1",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 116224
+    },
+    {
+     "name": "animation.gif",
+     "path": null,
+     "size": 10700,
+     "sha256": "7944911b18f8f75a7692ae2f6413b9d482f0f91f95c883e44c84f8cfe66f7d29",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 204800
+    },
+    {
+     "name": "scan.bmp",
+     "path": null,
+     "size": 24054,
+     "sha256": "f6465c23f45782197355322b054577b60fd66a591c87873a347432b703660eff",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 216064
+    },
+    {
+     "name": "document_scan.tif",
+     "path": null,
+     "size": 57740,
+     "sha256": "f6d787977f2450bc42ad28e69427eeb6093c96fb5d48f9d20236995bf40bfae8",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 260608
+    },
+    {
+     "name": "phone_photo.webp",
+     "path": null,
+     "size": 6628,
+     "sha256": "0c8a5075e754ca43bba599d54116f1b220600fbbc8c9b3d874c5e1e4ff2fecbf",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 318976
+    },
+    {
+     "name": "invoice_2019.pdf",
+     "path": null,
+     "size": 3853,
+     "sha256": "41517bee76076286b75921c3cc5c25ec53e312b558b13fdb65580b3d8fce9b27",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 346112
+    },
+    {
+     "name": "thesis.docx",
+     "path": null,
+     "size": 1452,
+     "sha256": "efd5cebf91c61471af6b485f9f6d43743b273f5b9c226c67ce001d190e47f8e5",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 359424
+    },
+    {
+     "name": "budget.xlsx",
+     "path": null,
+     "size": 842,
+     "sha256": "9a4e9532dad69f2277024d84583e367fc7219b3996871b0560eaaad51a6ad366",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 360960
+    },
+    {
+     "name": "slides.pptx",
+     "path": null,
+     "size": 811,
+     "sha256": "d86860a088fa3877b0ce11cc69b9f4b22729294c79203a63077dc0378b331d94",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 366080
+    },
+    {
+     "name": "old_report.doc",
+     "path": null,
+     "size": 15876,
+     "sha256": "4e69f7d645ed15d274ed2c8a9bc0e22f44a24b7382a3b93eda54638ac9bb6386",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 387584
+    },
+    {
+     "name": "old_budget.xls",
+     "path": null,
+     "size": 7688,
+     "sha256": "cae07a573511d8476175e4b8506a68992ddd5225c4f1d923e7dedbb677156b50",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 424448
+    },
+    {
+     "name": "backup.zip",
+     "path": null,
+     "size": 3236,
+     "sha256": "1930ef975a6a97ec6699d1014cd5c4476be62e532142de32ab01f60a887bd46b",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 436736
+    },
+    {
+     "name": "archive.7z",
+     "path": null,
+     "size": 5292,
+     "sha256": "111d5bbe35b385c892cbea6108424f9e1581c9bcbe9f144ee9e3ac79f6fed0ce",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 460800
+    },
+    {
+     "name": "logs.gz",
+     "path": null,
+     "size": 5312,
+     "sha256": "75c7c2cdaca8d801139c7cc06ca226a4a77484e34e2004551b4572737720c4b3",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 486912
+    },
+    {
+     "name": "dump.xz",
+     "path": null,
+     "size": 5220,
+     "sha256": "9defe35ad95ef473483a65701a48847196743ab20bef386eb40d55831d4171f9",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 513024
+    },
+    {
+     "name": "app_data.sqlite",
+     "path": null,
+     "size": 32768,
+     "sha256": "7ebb5412f7815ac60e4a3ab556ceb70178171f04367e6e29bffc6922fcc4527a",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 527872
+    },
+    {
+     "name": "letter.rtf",
+     "path": null,
+     "size": 2803,
+     "sha256": "050d526da600d6db92c0d1ad5901b241eccd7a5eaaa721e2109bd6586afea1de",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 581120
+    },
+    {
+     "name": "song.mp3",
+     "path": null,
+     "size": 16574,
+     "sha256": "0471a4937dca2f573ec399e828facab5083bdb47b00cc61820bd32bde7f696ba",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 593408
+    },
+    {
+     "name": "memo.wav",
+     "path": null,
+     "size": 16044,
+     "sha256": "177c46f7331707a814d6eda699bf38d12e13af966ddba95a6e95b43b4ce7f0eb",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 614400
+    },
+    {
+     "name": "lossless.flac",
+     "path": null,
+     "size": 20658,
+     "sha256": "7424229127d202209f888d6267eb13704ef8bd2dcbd21df31fb79c0283871f10",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 651264
+    },
+    {
+     "name": "voice.ogg",
+     "path": null,
+     "size": 5219,
+     "sha256": "5c788df7c12eb76b1afdd0168e70b415244209065dc835aa3815ed3aa527562e",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 672256
+    },
+    {
+     "name": "clip.mp4",
+     "path": null,
+     "size": 5390,
+     "sha256": "a9e062988845453018fd260a3fe9f8cbfbe6acece7ac3557933c9fd10a12f9b0",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 687104
+    },
+    {
+     "name": "camera.mov",
+     "path": null,
+     "size": 5337,
+     "sha256": "3dafbac44354f25b61729a007c7b1cc318c1032d4ecba42e6d17f53f672a994c",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 696832
+    },
+    {
+     "name": "old_video.avi",
+     "path": null,
+     "size": 17718,
+     "sha256": "71e31730390b0020a3ff71e73fe05db449a57794948222389feb7716c13a2915",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 711680
+    },
+    {
+     "name": "movie.mkv",
+     "path": null,
+     "size": 12363,
+     "sha256": "7e9e7879df7cb9b77a268c9086bdc36cfe28db4c33ee99ae013185ab597045db",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 733696
+    },
+    {
+     "name": "family_large.jpg",
+     "path": null,
+     "size": 365549,
+     "sha256": "eeb73c62a21919cbd4b40be8ee1ac56b60fd4df216a98b5dcc2b4aff30049ffc",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 747008
+    },
+    {
+     "name": "settings.xml",
+     "path": null,
+     "size": 4942,
+     "sha256": "93dfdc52a33abaef9d12b5f2d048e1d2dc9f1850bca5a60a1e39674167348581",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 1133056
+    },
+    {
+     "name": "page.html",
+     "path": null,
+     "size": 3081,
+     "sha256": "1b2f6b0fea55a906664775bd264f4dff695990bb5dbf1fed633367aa07311a19",
+     "deleted": true,
+     "expect": "exact",
+     "offset": 1138688
+    },
+    {
+     "name": "truncated.png",
+     "offset": 1146368,
+     "expect": "damaged",
+     "size": 67746,
+     "sha256": "0ffba0b286e892a9ce5ee5c2677e5b9ca06d65e82466d83a0b6cc92c829ab2b1"
+    },
+    {
+     "name": "fragmented.png",
+     "offset": 1204224,
+     "expect": "damaged",
+     "size": 689371,
+     "sha256": "0855c01098a24b3831e8ed15471b9ef5b16dfe03689680d6cd49bf42b739f735"
+    },
+    {
+     "name": "corrupt_header.jpg",
+     "offset": 1959424,
+     "expect": "not_verified",
+     "size": 29754
+    },
+    {
+     "name": "truncated.zip",
+     "offset": 1993728,
+     "expect": "damaged",
+     "size": 3236
+    }
+   ]
+  },
+  {
+   "name": "lost_partitions",
+   "file": "lost_partitions.img.gz",
+   "size": 100663296,
+   "sha256": "b1350a2d29a1f38706400d3df5564338058f731c796b0ae10116367c75ec03c0",
+   "scenario": "GPT disk whose MBR, primary GPT, backup GPT and NTFS primary boot sector were wiped",
+   "files": [
+    {
+     "name": "thesis.docx",
+     "path": "\\Work",
+     "size": 1452,
+     "sha256": "efd5cebf91c61471af6b485f9f6d43743b273f5b9c226c67ce001d190e47f8e5",
+     "deleted": false,
+     "expect": "exact",
+     "partition": 1
+    },
+    {
+     "name": "invoice_2019.pdf",
+     "path": "\\Work",
+     "size": 3853,
+     "sha256": "41517bee76076286b75921c3cc5c25ec53e312b558b13fdb65580b3d8fce9b27",
+     "deleted": false,
+     "expect": "exact",
+     "partition": 1
+    },
+    {
+     "name": "notes.txt",
+     "path": "\\Work",
+     "size": 14590,
+     "sha256": "28aa5aab537e23460cf39c7a2cbd4a5a034a945a85e6dd660cdf7960ad4af20d",
+     "deleted": false,
+     "expect": "exact",
+     "partition": 1
+    },
+    {
+     "name": "holiday_beach.jpg",
+     "path": "\\Pictures",
+     "size": 29754,
+     "sha256": "de55da4c8d2f12cf5ed228fe586c65b06b7003efcfaa6a1bff66da76933a1d88",
+     "deleted": false,
+     "expect": "exact",
+     "partition": 2
+    },
+    {
+     "name": "diagram.png",
+     "path": "\\Pictures",
+     "size": 67746,
+     "sha256": "0ffba0b286e892a9ce5ee5c2677e5b9ca06d65e82466d83a0b6cc92c829ab2b1",
+     "deleted": false,
+     "expect": "exact",
+     "partition": 2
+    }
+   ],
+   "partitions": [
+    {
+     "index": 1,
+     "offset": 1048576,
+     "length": 41943040,
+     "fs": "NTFS",
+     "note": "primary boot sector wiped; only backup boot sector remains"
+    },
+    {
+     "index": 2,
+     "offset": 42991616,
+     "length": 41943040,
+     "fs": "FAT32"
+    }
+   ]
+  },
+  {
+   "name": "reformatted_ntfs",
+   "file": "reformatted_ntfs.img.gz",
+   "size": 67108864,
+   "sha256": "ac496632eed227fc7bed057d625555fb6013a420a32e97b485e46d4265e55842",
+   "scenario": "NTFS volume populated, then quick-formatted again and partially reused (simulates a Windows reinstall)",
+   "files": [
+    {
+     "name": "holiday_beach.jpg",
+     "path": "\\Users\\Owner\\Pictures",
+     "size": 29754,
+     "sha256": "de55da4c8d2f12cf5ed228fe586c65b06b7003efcfaa6a1bff66da76933a1d88",
+     "deleted": true,
+     "expect": "best_effort"
+    },
+    {
+     "name": "diagram.png",
+     "path": "\\Users\\Owner\\Pictures",
+     "size": 67746,
+     "sha256": "0ffba0b286e892a9ce5ee5c2677e5b9ca06d65e82466d83a0b6cc92c829ab2b1",
+     "deleted": true,
+     "expect": "best_effort"
+    },
+    {
+     "name": "invoice_2019.pdf",
+     "path": "\\Users\\Owner\\Documents",
+     "size": 3853,
+     "sha256": "41517bee76076286b75921c3cc5c25ec53e312b558b13fdb65580b3d8fce9b27",
+     "deleted": true,
+     "expect": "best_effort"
+    },
+    {
+     "name": "thesis.docx",
+     "path": "\\Users\\Owner\\Documents",
+     "size": 1452,
+     "sha256": "efd5cebf91c61471af6b485f9f6d43743b273f5b9c226c67ce001d190e47f8e5",
+     "deleted": true,
+     "expect": "best_effort"
+    },
+    {
+     "name": "song.mp3",
+     "path": "\\Users\\Owner\\Music",
+     "size": 16574,
+     "sha256": "0471a4937dca2f573ec399e828facab5083bdb47b00cc61820bd32bde7f696ba",
+     "deleted": true,
+     "expect": "best_effort"
+    },
+    {
+     "name": "old_report.doc",
+     "path": "\\Users\\Owner\\Documents",
+     "size": 15876,
+     "sha256": "4e69f7d645ed15d274ed2c8a9bc0e22f44a24b7382a3b93eda54638ac9bb6386",
+     "deleted": true,
+     "expect": "best_effort"
+    },
+    {
+     "name": "letter_007.txt",
+     "path": "\\Users\\Owner\\Documents",
+     "size": 765,
+     "sha256": "c33697b37fa752091c9b2b5ff67df6b19fc2fcec7d211ee029abb1454c2fc57f",
+     "deleted": true,
+     "expect": "best_effort"
+    },
+    {
+     "name": "letter_150.txt",
+     "path": "\\Users\\Owner\\Documents\\Taxes",
+     "size": 1411,
+     "sha256": "57a30c2b1351d1ea07fe18fdd0dc8fed4be194c53f0d39a2c6331dbd2767e300",
+     "deleted": true,
+     "expect": "best_effort"
+    },
+    {
+     "name": "letter_399.txt",
+     "path": "\\Users\\Owner\\Documents",
+     "size": 1663,
+     "sha256": "42a651c2d0fe8f045996c239277c116157574efeb016c0599d44bcfa8d9e1e74",
+     "deleted": true,
+     "expect": "best_effort"
+    }
+   ],
+   "partition_offset": 1048576
+  }
+ ]
+}
