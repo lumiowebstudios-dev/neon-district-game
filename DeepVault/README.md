@@ -36,6 +36,13 @@ The **Deep Scan — All Applicable Methods** runs them in one sequential pass ov
 correlates and de-duplicates results, records every unreadable/skipped region and is
 checkpointed so it can be stopped and resumed.
 
+## Screenshots (captured automatically on Windows by the GUI self-test)
+
+| | |
+|---|---|
+| ![Welcome](docs/screenshots/01-welcome.png) | ![Results](docs/screenshots/08-results-list.png) |
+| ![Gallery](docs/screenshots/09-results-gallery.png) | ![Restore](docs/screenshots/14-restore-destination.png) |
+
 ## Quick start
 
 1. Read `docs/SAFETY.md` (5 minutes). **Most important:** stop using the affected drive.
