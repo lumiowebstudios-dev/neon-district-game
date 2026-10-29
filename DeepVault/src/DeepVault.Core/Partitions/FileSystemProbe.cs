@@ -93,7 +93,10 @@ public static class FileSystemProbe
             long dataSectors = totalSectors - (reserved + nFats * fatSz + rootDirSectors);
             if (dataSectors <= 0) return null;
             long clusters = dataSectors / spc;
-            FsKind kind = clusters < 4085 ? FsKind.Fat12 : clusters < 65525 ? FsKind.Fat16 : FsKind.Fat32;
+            // FAT32 BPB layout (no 16-bit FAT size, no fixed root) wins over the cluster-count rule:
+            // small FAT32 volumes made by some formatters have fewer than 65525 clusters.
+            FsKind kind = fatSz16 == 0 && rootEntries == 0 ? FsKind.Fat32
+                : clusters < 4085 ? FsKind.Fat12 : clusters < 65525 ? FsKind.Fat16 : FsKind.Fat32;
             if (kind == FsKind.Fat32 && fatSz16 != 0) return null;
             if (kind != FsKind.Fat32 && rootEntries == 0) return null;
             int labelOff = kind == FsKind.Fat32 ? 0x47 : 0x2B;

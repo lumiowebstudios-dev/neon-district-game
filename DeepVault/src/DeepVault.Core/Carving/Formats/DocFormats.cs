@@ -83,7 +83,7 @@ public sealed class PdfFormat : CarveFormat
         if (s.StartsWith("xref"))
         {
             // Check the first entries of the first subsection: "nnnnnnnnnn ggggg n" must point at "N G obj".
-            var tbl = src.Get(start + xref, 4096);
+            var tbl = src.Get(start + xref, (int)Math.Min(4096, src.Length - (start + xref)));
             if (tbl == null) return 1;
             var lines = Encoding.ASCII.GetString(tbl).Split('\n').Select(l => l.Trim('\r', ' ')).ToArray();
             int checkedN = 0;
