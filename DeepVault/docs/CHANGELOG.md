@@ -1,7 +1,12 @@
 # Changelog
 
-## Unreleased
+## 1.0.2
 
+* **Fixed: the scan could fail at its very last step** ("Checking content of deleted files") with
+  "Unable to read beyond the end of the stream". An old file record listing less data than the
+  file's size stopped the whole check; such files are now marked damaged ("the recorded data covers
+  only … bytes") and the check continues. Any other problem with a single file is recorded on that
+  file instead of stopping the scan.
 * A scan interrupted without a normal stop (project drive unplugged, crash, power loss) can be
   resumed with **Resume scan** after reopening the project; previously the button stayed disabled
   and the scan had to be restarted under the same project name from Scan methods.

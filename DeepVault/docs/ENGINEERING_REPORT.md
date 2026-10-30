@@ -38,7 +38,7 @@ correlation and content checks.
   Build not code-signed. Full list: `KNOWN_LIMITATIONS.md`.
 
 ## What is required to build and launch
-* Launch: unzip `DeepVault-1.0.1-win-x64` on Windows 10/11 x64, run `DeepVault.exe` (restart as
+* Launch: unzip `DeepVault-1.0.2-win-x64` on Windows 10/11 x64, run `DeepVault.exe` (restart as
   administrator to read physical disks).
 * Build: .NET 10 SDK, then `build.ps1` (Windows) or `./build.sh` (Linux/macOS) — see `BUILD.md`.
 

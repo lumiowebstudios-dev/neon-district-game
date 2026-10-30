@@ -228,18 +228,12 @@ public sealed class ScanOrchestrator
             ct.ThrowIfCancellationRequested();
             if (++done % 64 == 0) { prog.Done = done; report.Report(prog); }
             if (!FormatValidator.ExpectsSignature(f.Extension) && f.Size > 4096) continue;
-            using var cs = new ContentStream(_reader, f.Layout);
-            Stream s = f.Size <= _opt.ValidateUpTo ? cs : new HeadStream(cs, 64 * 1024);
             FormatValidator.Validation v;
-            var head = new byte[Math.Min(4096, f.Size)];
-            cs.ReadExactly(head);
-            cs.Position = 0;
-            if (Bytes.IsAllZero(head)) v = new FormatValidator.Validation(StructureCheck.Damaged, "content is all zeros (never written, wiped or overwritten)", null);
-            else if (f.Size <= _opt.ValidateUpTo) v = FormatValidator.Validate(new StreamCarveSource(cs), f.Extension);
-            else
+            try { v = CheckOne(f); }
+            catch (Exception e) when (e is IOException or InvalidDataException or ArgumentException or InvalidOperationException or NotSupportedException or OverflowException)
             {
-                v = FormatValidator.Validate(new StreamCarveSource(s), f.Extension);
-                if (v.Check is StructureCheck.Damaged && v.Note?.Contains("header") != true) v = new FormatValidator.Validation(StructureCheck.Plausible, "header valid (file too large for a full check during the scan)", null);
+                // One file's unusual layout must never stop the scan: record it and carry on.
+                v = new FormatValidator.Validation(StructureCheck.Damaged, $"content could not be checked ({e.Message})", null);
             }
             if (v.Check == StructureCheck.NotChecked) continue;
             bool bad = v.Check == StructureCheck.Damaged;
@@ -248,6 +242,21 @@ public sealed class ScanOrchestrator
             if (bad) _db.UpdateConfidence(f.Id, Confidence.Low);
         }
         _db.AddIssue(new ScanIssue(IssueSeverity.Info, EngineId.None, $"Content check of {todo.Count:N0} deleted files: {damaged:N0} are damaged or empty."));
+    }
+
+    private FormatValidator.Validation CheckOne(FoundFile f)
+    {
+        using var cs = new ContentStream(_reader, f.Layout);
+        var head = new byte[Math.Min(4096, f.Size)];
+        int got = cs.ReadAtLeast(head, head.Length, throwOnEndOfStream: false);
+        if (got < head.Length)
+            return new FormatValidator.Validation(StructureCheck.Damaged, $"the recorded data covers only {got:N0} of the file's {f.Size:N0} bytes (record incomplete or overwritten)", null);
+        cs.Position = 0;
+        if (Bytes.IsAllZero(head)) return new FormatValidator.Validation(StructureCheck.Damaged, "content is all zeros (never written, wiped or overwritten)", null);
+        if (f.Size <= _opt.ValidateUpTo) return FormatValidator.Validate(new StreamCarveSource(cs), f.Extension);
+        var v = FormatValidator.Validate(new StreamCarveSource(new HeadStream(cs, 64 * 1024)), f.Extension);
+        if (v.Check is StructureCheck.Damaged && v.Note?.Contains("header") != true) v = new FormatValidator.Validation(StructureCheck.Plausible, "header valid (file too large for a full check during the scan)", null);
+        return v;
     }
 
     /// <summary>Exposes only the first bytes of a stream (header checks of large files).</summary>

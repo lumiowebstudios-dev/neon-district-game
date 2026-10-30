@@ -15,7 +15,7 @@ dotnet test tests/DeepVault.Tests -c Release
 Windows: `powershell -ExecutionPolicy Bypass -File build.ps1`
 Linux/macOS: `./build.sh`
 
-Both produce `artifacts/DeepVault-1.0.1-win-x64/` and `artifacts/DeepVault-1.0.1-win-x64.zip`
+Both produce `artifacts/DeepVault-1.0.2-win-x64/` and `artifacts/DeepVault-1.0.2-win-x64.zip`
 containing `DeepVault.exe`, `deepvault-cli.exe`, the runtime, docs, licences and the test images.
 Manual equivalent:
 ```

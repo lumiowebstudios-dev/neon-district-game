@@ -19,7 +19,7 @@ overwrites anything on the destination, has no telemetry and never connects to t
 | `deepvault-cli.exe` | Command-line tool with the same engines (scripting, advanced users) |
 | `src/DeepVault.Core` | Platform-independent recovery engines, catalogue, restore, imaging, previews |
 | `src/DeepVault.Platform.Windows` | The only code that touches raw disks: `GENERIC_READ` + query-only IOCTLs |
-| `tests/` | 29 automated tests on disposable disk images built with real file-system drivers |
+| `tests/` | 35 automated tests on disposable disk images built with real file-system drivers |
 
 ## Recovery engines (all operational)
 
@@ -46,7 +46,7 @@ checkpointed so it can be stopped and resumed.
 ## Quick start
 
 1. Read `docs/SAFETY.md` (5 minutes). **Most important:** stop using the affected drive.
-2. Unzip `DeepVault-1.0.1-win-x64` anywhere (preferably onto the USB drive, not the drive you
+2. Unzip `DeepVault-1.0.2-win-x64` anywhere (preferably onto the USB drive, not the drive you
    are recovering) and run `DeepVault.exe`.
 3. Practise first on a disk image: `test-images/*.img.gz` in the package (unzip with 7-Zip) →
    *Select drive → Open a disk image instead…*. See `docs/USER_GUIDE.txt`, section 3.

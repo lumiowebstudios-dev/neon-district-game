@@ -307,6 +307,34 @@ public class DeepScanTests
     }
 
     [Fact]
+    public void A_record_whose_data_runs_are_shorter_than_its_size_is_flagged_not_fatal()
+    {
+        // Old records can list fewer clusters than the file's size (incomplete or overwritten run list).
+        // Reading such a file must mark it damaged, never stop the scan at its last step.
+        var fx = Fixtures.Get("ntfs_deleted");
+        using var src = new FileBlockSource(fx.ImagePath);
+        var path = Path.Combine(Fixtures.NewTempDir("shortruns"), "s" + ProjectDatabase.FileExtension);
+        var (db1, s1) = Scan(src, null, null, default, path);
+        Assert.Equal(ScanOutcome.Completed, s1.Outcome);
+        var bad = new FoundFile
+        {
+            Name = "notes.txt", Extension = "txt", Path = "\\Users\\x\\Documents", Size = 3000, IsDeleted = true,
+            Engines = EngineId.OrphanMftRecords, State = RecoveryState.MetadataRecovered,
+            Layout = new DataLayout { Kind = LayoutKind.Extents, Length = 3000, Extents = { new Extent(1024 * 1024, 1024) } },
+        };
+        db1.AddFile(bad);
+        db1.Commit();
+        db1.Dispose();
+
+        var (db2, s2) = Scan(src, null, null, default, path);
+        using var _ = db2;
+        Assert.Equal(ScanOutcome.Completed, s2.Outcome);
+        var f = db2.GetFile(bad.Id)!;
+        Assert.Equal(StructureCheck.Damaged, f.Structure);
+        Assert.Contains("covers only", f.Notes);
+    }
+
+    [Fact]
     public void Deleted_file_whose_data_never_reached_the_disk_is_flagged_before_restore()
     {
         // Windows can delete a file while its data is still in the write cache: the MFT record survives,
