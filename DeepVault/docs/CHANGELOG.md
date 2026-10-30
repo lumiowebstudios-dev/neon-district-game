@@ -7,6 +7,8 @@
   and the scan had to be restarted under the same project name from Scan methods.
 * If the project cannot be saved during a scan, the progress page now says so and explains how to
   resume, instead of staying on "Working…".
+* The time-left estimate after a resume no longer counts the jump to the resume position as
+  scanning speed (it could show "15 seconds left" with 50 GB to go).
 
 ## 1.0.1
 

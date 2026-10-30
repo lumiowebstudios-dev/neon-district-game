@@ -523,6 +523,7 @@ public sealed class ProgressViewModel : PageViewModel
     private int _etaPhase = -1;
     private long _etaDone0;
     private TimeSpan _etaTime0;
+    private bool _etaStarted;
 
     private void Refresh()
     {
@@ -539,7 +540,12 @@ public sealed class ProgressViewModel : PageViewModel
             : (p.Done > 0 ? $"{p.Done:N0} {p.Unit} processed — total not known in advance" : "Working…");
         // The time left uses the average rate since this phase started (or resumed): the momentary
         // rate swings widely as the scan moves between empty space and dense areas.
-        if (p.PhaseIndex != _etaPhase || p.Done < _etaDone0) { _etaPhase = p.PhaseIndex; _etaDone0 = p.Done; _etaTime0 = p.Elapsed; }
+        // The baseline is taken from the phase's first real position: a resumed phase reports 0 before
+        // it reports where it resumed, and that jump must not count as scanning speed.
+        if (p.PhaseIndex != _etaPhase || p.Done < _etaDone0 || (!_etaStarted && p.Done > 0))
+        {
+            _etaPhase = p.PhaseIndex; _etaDone0 = p.Done; _etaTime0 = p.Elapsed; _etaStarted = p.Done > 0;
+        }
         double avg = (p.Elapsed - _etaTime0).TotalSeconds >= 30 ? (p.Done - _etaDone0) / (p.Elapsed - _etaTime0).TotalSeconds : 0;
         SpeedText = p.Unit == "bytes" && p.BytesPerSecond > 0
             ? $"{Bytes.FormatSize((long)p.BytesPerSecond)}/s" + (p.Total > 0 && avg > 0 ? $" • about {Bytes.FormatDuration(TimeSpan.FromSeconds((p.Total - p.Done) / avg))} left in this phase (estimate)" : "")
