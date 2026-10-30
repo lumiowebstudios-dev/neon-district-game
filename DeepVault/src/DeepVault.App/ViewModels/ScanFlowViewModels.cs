@@ -499,6 +499,17 @@ public sealed class ProgressViewModel : PageViewModel
                 _ => $"Scan failed: {sum.Error}",
             };
         }
+        catch (Exception e) when (e is Microsoft.Data.Sqlite.SqliteException or IOException or UnauthorizedAccessException)
+        {
+            // The project could not be written (e.g. its drive was unplugged): progress up to the last
+            // checkpoint is kept, so the scan can be resumed once the drive is back.
+            S.Log.Error("Scan interrupted", e);
+            S.LastSummary = new ScanSummary { Outcome = ScanOutcome.Failed, Error = e.Message };
+            Indeterminate = false;
+            PhaseText = "Scan interrupted";
+            ResultIsWarning = true;
+            ResultText = $"The scan was interrupted because the project could not be saved ({e.Message}). Progress up to the last save point is kept: check that the project drive is connected, close and reopen DeepVault, open the project in Saved projects, then click Resume scan.";
+        }
         finally
         {
             _timer.Stop();

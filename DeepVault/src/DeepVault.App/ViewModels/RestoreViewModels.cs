@@ -328,6 +328,12 @@ public sealed class ProjectsViewModel : PageViewModel
             var id = db.GetMetaJson<SourceIdentity>("source");
             S.SetProject(db, path);
             S.LastSummary = db.GetMetaJson<ScanSummary>("scan_summary");
+            // A scan that never recorded its end (drive unplugged, crash, power loss) can still be resumed.
+            if (db.GetMeta("scan_status") == "running")
+            {
+                S.LastSummary ??= new ScanSummary();
+                S.LastSummary.Outcome = ScanOutcome.Cancelled;
+            }
             S.ScanOptions = db.GetMetaJson<ScanOptions>("scan_options") ?? new ScanOptions();
             Message = id == null ? "This project has no source information." : S.TryReopenSourceFor(id);
             Main.Navigate("results");

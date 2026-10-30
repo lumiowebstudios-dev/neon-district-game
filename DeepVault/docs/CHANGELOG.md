@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+* A scan interrupted without a normal stop (project drive unplugged, crash, power loss) can be
+  resumed with **Resume scan** after reopening the project; previously the button stayed disabled
+  and the scan had to be restarted under the same project name from Scan methods.
+* If the project cannot be saved during a scan, the progress page now says so and explains how to
+  resume, instead of staying on "Working…".
+
 ## 1.0.1
 
 * **Much faster deep scans on real Windows disks.** The ZIP check (used for ZIP archives and
